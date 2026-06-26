@@ -3,17 +3,12 @@
  * 公众号复制链路必须生成 PNG，而 foreignObject 进 canvas 会污染画布。
  */
 
+import { layoutSvgTextLines, type SvgTextBox } from "./wechatMermaidTextLayout";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-type SvgBox = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
-
 type ForeignObjectPlacement = {
-  box: SvgBox;
+  box: SvgTextBox;
   target: SVGElement;
 };
 
@@ -41,6 +36,21 @@ const parseSvgLength = (value: string | null): number | null => {
   if (!value) return null;
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : null;
+};
+
+const getSvgTextFontSize = (textEl: SVGTextElement): number => {
+  const candidates = [
+    textEl.getAttribute("font-size"),
+    textEl.style.fontSize,
+    textEl.querySelector("tspan")?.getAttribute("font-size"),
+  ];
+
+  for (const candidate of candidates) {
+    const parsed = parseSvgLength(candidate ?? null);
+    if (parsed) return parsed;
+  }
+
+  return 16;
 };
 
 const getViewBoxParts = (svg: SVGElement, svgRect: DOMRect): number[] => {
@@ -209,7 +219,7 @@ const findClusterGroup = (
   );
 };
 
-const getClusterBox = (cluster: SVGGElement): SvgBox | null => {
+const getClusterBox = (cluster: SVGGElement): SvgTextBox | null => {
   const rect = cluster.querySelector<SVGRectElement>("rect");
   if (rect) {
     const x = parseSvgLength(rect.getAttribute("x"));
@@ -236,6 +246,71 @@ const getClusterBox = (cluster: SVGGElement): SvgBox | null => {
   }
 
   return null;
+};
+
+const getNodeTextBox = (textEl: SVGTextElement): SvgTextBox | null => {
+  const node = textEl.closest("g.node") as SVGGElement | null;
+  if (!node || textEl.closest(".cluster-label")) return null;
+
+  const rect = node.querySelector<SVGRectElement>("rect");
+  if (!rect) return null;
+
+  const x = parseSvgLength(rect.getAttribute("x")) ?? 0;
+  const y = parseSvgLength(rect.getAttribute("y")) ?? 0;
+  const width = parseSvgLength(rect.getAttribute("width"));
+  const height = parseSvgLength(rect.getAttribute("height"));
+  if (!width || !height) return null;
+
+  return { x, y, width, height };
+};
+
+const getSvgTextLines = (textEl: SVGTextElement): string[] => {
+  const tspans = Array.from(textEl.querySelectorAll("tspan"));
+  const rawLines =
+    tspans.length > 0
+      ? tspans.map((tspan) => tspan.textContent ?? "")
+      : (textEl.textContent ?? "").split(/\n+/);
+
+  return rawLines.map((line) => line.trim()).filter(Boolean);
+};
+
+const applySvgTextLayout = (
+  textEl: SVGTextElement,
+  box: SvgTextBox,
+  rawLines: string[],
+  preferredFontSize?: number,
+): void => {
+  const layout = layoutSvgTextLines(rawLines, box, preferredFontSize);
+
+  textEl.replaceChildren();
+  textEl.setAttribute("x", String(layout.centerX));
+  textEl.setAttribute("y", String(layout.startY));
+  textEl.setAttribute("text-anchor", "middle");
+  textEl.setAttribute("font-size", String(layout.fontSize));
+
+  layout.lines.forEach((line, i) => {
+    const tspan = document.createElementNS(SVG_NS, "tspan");
+    tspan.setAttribute("x", String(layout.centerX));
+    if (i > 0) tspan.setAttribute("dy", String(layout.lineHeight));
+    tspan.textContent = line;
+    textEl.appendChild(tspan);
+  });
+};
+
+const wrapNativeNodeTextLabels = (svg: SVGElement): void => {
+  const textElements = Array.from(
+    svg.querySelectorAll<SVGTextElement>("g.node text"),
+  );
+
+  textElements.forEach((textEl) => {
+    const box = getNodeTextBox(textEl);
+    if (!box) return;
+
+    const rawLines = getSvgTextLines(textEl);
+    if (rawLines.length === 0) return;
+
+    applySvgTextLayout(textEl, box, rawLines, getSvgTextFontSize(textEl));
+  });
 };
 
 const parseTranslate = (
@@ -321,6 +396,8 @@ export const applyNativeSubgraphTitleStyles = (
 };
 
 export const replaceForeignObjectWithSvgText = (svg: SVGElement): void => {
+  wrapNativeNodeTextLabels(svg);
+
   const svgRect = svg.getBoundingClientRect();
   const viewBox = getViewBoxParts(svg, svgRect);
   const foreignObjects = Array.from(svg.querySelectorAll("foreignObject"));
@@ -347,33 +424,14 @@ export const replaceForeignObjectWithSvgText = (svg: SVGElement): void => {
       continue;
     }
 
-    const fontSize = Math.min(
-      Math.max(box.height / (lines.length + 0.6), 10),
-      18,
-    );
-    const lineHeight = fontSize * 1.2;
-    const totalHeight = lineHeight * lines.length;
-    const startY = box.y + box.height / 2 - totalHeight / 2 + fontSize * 0.85;
-    const centerX = box.x + box.width / 2;
     const textEl = document.createElementNS(SVG_NS, "text");
 
-    textEl.setAttribute("x", String(centerX));
-    textEl.setAttribute("y", String(startY));
-    textEl.setAttribute("text-anchor", "middle");
-    textEl.setAttribute("font-size", String(fontSize));
     textEl.setAttribute(
       "font-family",
       '-apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif',
     );
     textEl.setAttribute("fill", getForeignObjectTextFill(fo));
-
-    lines.forEach((line, i) => {
-      const tspan = document.createElementNS(SVG_NS, "tspan");
-      tspan.setAttribute("x", String(centerX));
-      if (i > 0) tspan.setAttribute("dy", String(lineHeight));
-      tspan.textContent = line;
-      textEl.appendChild(tspan);
-    });
+    applySvgTextLayout(textEl, box, lines);
 
     fo.remove();
     pendingTexts.push({ target, text: textEl });

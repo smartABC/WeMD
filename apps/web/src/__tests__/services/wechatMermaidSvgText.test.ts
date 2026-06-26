@@ -62,6 +62,58 @@ describe("replaceForeignObjectWithSvgText", () => {
     expect(text?.getAttribute("fill")).not.toBe("#111");
   });
 
+  it("wraps long Chinese foreignObject labels within the node box", () => {
+    const svg = parseSvg(`
+      <svg width="220" height="120" viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg">
+        <g class="node">
+          <rect x="20" y="20" width="120" height="64" />
+          <g class="label">
+            <foreignObject x="20" y="20" width="120" height="64">
+              <div xmlns="http://www.w3.org/1999/xhtml">
+                <span style="color:#222">久坐、久思、用眼过度<br />→胃气极度虚弱（太阴）</span>
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+      </svg>
+    `);
+
+    replaceForeignObjectWithSvgText(svg);
+
+    const text = svg.querySelector("text");
+    const tspans = Array.from(svg.querySelectorAll("tspan"));
+    expect(svg.querySelector("foreignObject")).toBeNull();
+    expect(text?.getAttribute("text-anchor")).toBe("middle");
+    expect(tspans.length).toBeGreaterThan(2);
+    expect(
+      tspans.every((tspan) => (tspan.textContent ?? "").length <= 10),
+    ).toBe(true);
+  });
+
+  it("wraps long native SVG node labels emitted by Mermaid", () => {
+    const svg = parseSvg(`
+      <svg width="220" height="120" viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg">
+        <g class="node">
+          <rect x="10" y="10" width="110" height="58" />
+          <g class="label">
+            <text x="65" y="39" font-size="16">水饮蒙蔽清阳→头前额如裹、头顶禁锢、头昏沉</text>
+          </g>
+        </g>
+      </svg>
+    `);
+
+    replaceForeignObjectWithSvgText(svg);
+
+    const text = svg.querySelector("text");
+    const tspans = Array.from(svg.querySelectorAll("tspan"));
+    expect(text?.getAttribute("x")).toBe("65");
+    expect(text?.getAttribute("text-anchor")).toBe("middle");
+    expect(tspans.length).toBeGreaterThan(2);
+    expect(
+      tspans.every((tspan) => (tspan.textContent ?? "").length <= 10),
+    ).toBe(true);
+  });
+
   it("builds a canvas title overlay from the original subgraph declaration", () => {
     const svg = parseSvg(`
       <svg width="300" height="180" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
