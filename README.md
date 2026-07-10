@@ -175,6 +175,19 @@ WeMD 已开放外部贡献。准备提交代码前，请先阅读 [贡献指南]
 
 ---
 
+## ❤️ 支持 WeMD
+
+WeMD 会继续保持免费、开源。目前官方图床的免费存储空间逐渐吃紧，如果这个项目对你有所帮助，欢迎通过微信或支付宝自愿支持。收到的支持将优先用于图片存储、带宽及项目持续维护。
+
+<p align="center">
+  <img src=".github/assets/wechat-pay.jpg" width="260" alt="微信支付收款码" />
+  <img src=".github/assets/alipay.jpg" width="260" alt="支付宝收款码" />
+</p>
+
+感谢每一份支持，也请量力而行。
+
+---
+
 ## 🤝 致谢
 
 本项目的微信深色模式预览算法深度参考了微信官方开源的 [wechatjs/mp-darkmode](https://github.com/wechatjs/mp-darkmode) 核心逻辑。感谢微信团队为开发者提供的优秀解决方案！
