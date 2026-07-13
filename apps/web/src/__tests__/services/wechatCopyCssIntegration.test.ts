@@ -1,14 +1,96 @@
-import { describe, expect, it } from "vitest";
-import { processHtml } from "@wemd/core";
+import { describe, expect, it, vi } from "vitest";
+import { modernEditorialTheme, processHtml } from "@wemd/core";
 import {
   applyLightRootVars,
   resolveInlineStyleVariablesForCopy,
 } from "../../services/inlineStyleVarResolver";
 import { normalizeCopyContainer } from "../../services/wechatCopyService";
+import {
+  materializeCounterPseudoContent,
+  stripCounterPseudoRules,
+} from "../../services/wechatCounterCompat";
 import { defaultVariables } from "../../components/Theme/ThemeDesigner/defaults";
 import { generateCSS } from "../../components/Theme/ThemeDesigner/generateCSS";
 
 describe("wechat copy css integration", () => {
+  it("将编辑部手记章节编号转换为可复制的真实节点", () => {
+    const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    const getComputedStyleSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element: Element, pseudo?: string | null) => {
+        const htmlElement = element as HTMLElement;
+        const tagName = htmlElement.tagName.toLowerCase();
+
+        if (!pseudo && tagName === "section" && htmlElement.id === "wemd") {
+          return {
+            content: "normal",
+            getPropertyValue: (property: string) =>
+              property === "counter-reset" ? "editorial-section 0" : "none",
+          } as unknown as CSSStyleDeclaration;
+        }
+
+        if (pseudo === "::before" && tagName === "h2") {
+          return {
+            content: "counter(editorial-section, decimal-leading-zero)",
+            getPropertyValue: (property: string) =>
+              ({
+                color: "rgb(199, 98, 55)",
+                "font-family": "Consolas, monospace",
+                "font-size": "32px",
+                "font-weight": "800",
+                "line-height": "32px",
+                display: "inline-block",
+                "counter-increment": "editorial-section 1",
+                "counter-reset": "none",
+              })[property] ?? "",
+          } as unknown as CSSStyleDeclaration;
+        }
+
+        if (pseudo) {
+          return {
+            content: "none",
+            getPropertyValue: () => "",
+          } as unknown as CSSStyleDeclaration;
+        }
+
+        return originalGetComputedStyle(element);
+      });
+
+    try {
+      const html = `
+        <h2><span class="content">第一节</span></h2>
+        <p>正文。</p>
+        <h2><span class="content">第二节</span></h2>
+      `;
+      const materializedHtml = materializeCounterPseudoContent(
+        html,
+        modernEditorialTheme,
+      );
+      const output = resolveInlineStyleVariablesForCopy(
+        processHtml(
+          materializedHtml,
+          stripCounterPseudoRules(modernEditorialTheme),
+          true,
+          true,
+        ),
+      );
+      const container = document.createElement("div");
+      container.innerHTML = output;
+      normalizeCopyContainer(container);
+
+      const counters = Array.from(
+        container.querySelectorAll("h2 > span"),
+      ).filter((span) => /^\d{2}$/.test(span.textContent?.trim() ?? ""));
+      expect(counters).toHaveLength(2);
+      expect(counters[0].textContent).toBe("01");
+      expect(counters[1].textContent).toBe("02");
+      expect((counters[0] as HTMLElement).style.fontSize).toBe("32px");
+      expect(output).not.toContain("counter(editorial-section");
+    } finally {
+      getComputedStyleSpy.mockRestore();
+    }
+  });
+
   it("resolves inline var() values with scope-aware computed values", () => {
     const html = "<p>段落</p>";
     const css = `
