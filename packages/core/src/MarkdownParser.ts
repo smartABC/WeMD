@@ -10,6 +10,7 @@ import markdownItUnderline from "./plugins/markdown-it-underline";
 import markdownItSub from "markdown-it-sub";
 import markdownItSup from "markdown-it-sup";
 import { full as markdownItEmoji } from "markdown-it-emoji";
+import markdownItAttrs from "markdown-it-attrs";
 
 // Local plugins
 
@@ -30,6 +31,7 @@ import markdownItLiReplacer from "./plugins/markdown-it-li";
 import markdownItGitHubAlert from "./plugins/markdown-it-github-alert";
 import markdownItTaskLists from "markdown-it-task-lists";
 import markdownItCheckboxEmoji from "./plugins/markdown-it-checkbox-emoji";
+import markdownItAttributePolicy from "./plugins/markdown-it-attribute-policy";
 
 import highlightjs from "./utils/langHighlight";
 
@@ -92,6 +94,10 @@ export const createMarkdownParser = (options: MarkdownParserOptions = {}) => {
   });
 
   markdownParser
+    .use(markdownItAttrs, {
+      allowedAttributes: ["class", "id", /^data-[\w-]+$/],
+    })
+    .use(markdownItAttributePolicy)
     .use(markdownItSpan)
     .use(markdownItTableContainer)
     .use(markdownItMath, {

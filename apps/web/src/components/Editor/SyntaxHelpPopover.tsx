@@ -15,6 +15,7 @@ const syntaxItems = [
   { syntax: "X^2^", desc: "上标" },
   { syntax: "> [!NOTE]", desc: "提示块" },
   { syntax: "- [ ] 任务", desc: "任务列表" },
+  { syntax: "{.class #id}", desc: "局部样式属性" },
 ];
 
 export function SyntaxHelpPopover() {
@@ -54,6 +55,7 @@ export function SyntaxHelpPopover() {
       <button
         className={`md-toolbar-btn ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen((prev) => !prev)}
+        aria-label="语法帮助"
         data-tooltip="语法帮助"
       >
         <HelpCircle size={16} />
