@@ -4,6 +4,7 @@
  */
 import {
   basicTheme,
+  codeGithubDarkTheme,
   customDefaultTheme,
   codeGithubTheme,
   clearGuideTheme,
@@ -76,7 +77,7 @@ export const builtInThemes: CustomTheme[] = [
   {
     id: "data-blueprint",
     name: "数据蓝图",
-    css: basicTheme + "\n" + dataBlueprintTheme + "\n" + codeGithubTheme,
+    css: basicTheme + "\n" + dataBlueprintTheme + "\n" + codeGithubDarkTheme,
     isBuiltIn: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -84,7 +85,7 @@ export const builtInThemes: CustomTheme[] = [
   {
     id: "eastern-notes",
     name: "东方笺谱",
-    css: basicTheme + "\n" + easternNotesTheme + "\n" + codeGithubTheme,
+    css: basicTheme + "\n" + easternNotesTheme + "\n" + codeGithubDarkTheme,
     isBuiltIn: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -92,7 +93,7 @@ export const builtInThemes: CustomTheme[] = [
   {
     id: "clear-guide",
     name: "清晰指南",
-    css: basicTheme + "\n" + clearGuideTheme + "\n" + codeGithubTheme,
+    css: basicTheme + "\n" + clearGuideTheme + "\n" + codeGithubDarkTheme,
     isBuiltIn: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -100,7 +101,8 @@ export const builtInThemes: CustomTheme[] = [
   {
     id: "whitespace-gallery",
     name: "留白画册",
-    css: basicTheme + "\n" + whitespaceGalleryTheme + "\n" + codeGithubTheme,
+    css:
+      basicTheme + "\n" + whitespaceGalleryTheme + "\n" + codeGithubDarkTheme,
     isBuiltIn: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -167,7 +169,7 @@ export const builtInThemes: CustomTheme[] = [
   {
     id: "modern-editorial",
     name: "编辑部手记",
-    css: basicTheme + "\n" + modernEditorialTheme + "\n" + codeGithubTheme,
+    css: basicTheme + "\n" + modernEditorialTheme + "\n" + codeGithubDarkTheme,
     isBuiltIn: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

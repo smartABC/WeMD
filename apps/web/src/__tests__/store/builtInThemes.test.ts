@@ -71,4 +71,25 @@ describe("built-in themes", () => {
       expect(theme?.css).toContain("#wemd .hljs");
     }
   });
+
+  it("深色代码块主题使用可读的深色语法高亮配色", () => {
+    const darkCodeThemeIds = [
+      "modern-editorial",
+      "data-blueprint",
+      "eastern-notes",
+      "clear-guide",
+      "whitespace-gallery",
+    ];
+
+    for (const themeId of darkCodeThemeIds) {
+      const theme = builtInThemes.find((item) => item.id === themeId);
+
+      expect(theme?.css, themeId).toMatch(
+        /#wemd \.hljs-attr,[\s\S]*?#wemd \.hljs-literal,[\s\S]*?color:\s*#79c0ff;/,
+      );
+      expect(theme?.css, themeId).not.toMatch(
+        /#wemd \.hljs-number,[\s\S]*?#wemd \.hljs-literal,[\s\S]*?color:\s*#008080;/,
+      );
+    }
+  });
 });

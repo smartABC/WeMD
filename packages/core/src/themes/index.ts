@@ -1,6 +1,7 @@
 export * from "./basic";
 
 export * from "./code-github";
+export * from "./code-github-dark";
 export * from "./custom-default";
 export * from "./academic-paper";
 export * from "./aurora-glass";
