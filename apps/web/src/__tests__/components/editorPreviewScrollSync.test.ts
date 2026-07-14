@@ -20,9 +20,11 @@ const createFrameQueue = () => {
   };
 };
 
-const createAdapter = (position: ScrollSyncPosition) => {
+const createAdapter = (initialPosition: ScrollSyncPosition) => {
+  let position = initialPosition;
   let scrollListener = () => undefined;
   let layoutListener = () => undefined;
+  let userIntentListener = () => undefined;
   const adapter: ScrollSyncAdapter = {
     getPosition: vi.fn(() => position),
     scrollToPosition: vi.fn(),
@@ -34,11 +36,19 @@ const createAdapter = (position: ScrollSyncPosition) => {
       layoutListener = listener;
       return () => undefined;
     }),
+    subscribeUserIntent: vi.fn((listener) => {
+      userIntentListener = listener;
+      return () => undefined;
+    }),
   };
   return {
     adapter,
     emitScroll: () => scrollListener(),
     emitLayoutChange: () => layoutListener(),
+    emitUserIntent: () => userIntentListener(),
+    setPosition: (nextPosition: ScrollSyncPosition) => {
+      position = nextPosition;
+    },
   };
 };
 
@@ -61,7 +71,7 @@ describe("编辑器与预览双向滚动协调", () => {
     coordinator.destroy();
   });
 
-  it("忽略程序化滚动产生的反向事件，并在布局变化后恢复当前锚点", () => {
+  it("忽略程序化滚动产生的反向事件，并在布局变化后读取编辑器当前位置", () => {
     const frames = createFrameQueue();
     const editor = createAdapter({ sourceLine: 18, ratio: 0.6 });
     const preview = createAdapter({ sourceLine: 4, ratio: 0.2 });
@@ -75,11 +85,33 @@ describe("编辑器与预览双向滚动协调", () => {
     frames.flush();
     expect(editor.adapter.scrollToPosition).not.toHaveBeenCalled();
 
+    editor.setPosition({ sourceLine: 22, ratio: 0.7 });
     preview.emitLayoutChange();
     frames.flush();
     expect(preview.adapter.scrollToPosition).toHaveBeenLastCalledWith({
-      sourceLine: 18,
-      ratio: 0.6,
+      sourceLine: 22,
+      ratio: 0.7,
+    });
+    coordinator.destroy();
+  });
+
+  it("目标侧出现真实用户意图时立即接管同步来源", () => {
+    const frames = createFrameQueue();
+    const editor = createAdapter({ sourceLine: 18, ratio: 0.6 });
+    const preview = createAdapter({ sourceLine: 4, ratio: 0.2 });
+    const coordinator = createEditorPreviewScrollSync(frames);
+    coordinator.setAdapter("editor", editor.adapter);
+    coordinator.setAdapter("preview", preview.adapter);
+
+    editor.emitScroll();
+    frames.flush();
+    preview.emitUserIntent();
+    preview.emitScroll();
+    frames.flush();
+
+    expect(editor.adapter.scrollToPosition).toHaveBeenLastCalledWith({
+      sourceLine: 4,
+      ratio: 0.2,
     });
     coordinator.destroy();
   });

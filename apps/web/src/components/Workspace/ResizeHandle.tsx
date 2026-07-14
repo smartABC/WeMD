@@ -2,6 +2,8 @@ import { useRef, type PointerEvent as ReactPointerEvent } from "react";
 
 interface ResizeHandleProps {
   ratio: number;
+  minRatio?: number;
+  maxRatio?: number;
   onRatioChange: (ratio: number) => void;
   onPointerPosition: (clientX: number) => void;
   onReset: () => void;
@@ -10,6 +12,8 @@ interface ResizeHandleProps {
 
 export function ResizeHandle({
   ratio,
+  minRatio = 0.35,
+  maxRatio = 0.65,
   onRatioChange,
   onPointerPosition,
   onReset,
@@ -44,8 +48,8 @@ export function ResizeHandle({
       role="separator"
       aria-label="调整编辑器与预览宽度"
       aria-orientation="vertical"
-      aria-valuemin={35}
-      aria-valuemax={65}
+      aria-valuemin={Math.round(minRatio * 100)}
+      aria-valuemax={Math.round(maxRatio * 100)}
       aria-valuenow={Math.round(ratio * 100)}
       tabIndex={0}
       onPointerDown={handlePointerDown}

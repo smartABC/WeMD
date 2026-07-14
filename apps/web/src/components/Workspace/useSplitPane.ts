@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const STORAGE_KEY = "wemd-editor-pane-ratio";
 const DEFAULT_RATIO = 0.58;
@@ -38,7 +45,7 @@ export function useSplitPane() {
   const [containerWidth, setContainerWidth] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     const updateWidth = () => setContainerWidth(container.clientWidth);
@@ -91,6 +98,8 @@ export function useSplitPane() {
   return {
     containerRef,
     ratio,
+    minRatio: bounds.min,
+    maxRatio: bounds.max,
     editorWidth,
     isDragging,
     setDragging: setIsDragging,

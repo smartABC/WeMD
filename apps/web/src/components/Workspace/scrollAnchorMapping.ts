@@ -97,8 +97,6 @@ export const mapSourceLineToScrollTop = (
 export const mapScrollTopToSourceLine = (
   anchors: ScrollAnchor[],
   scrollTop: number,
-  _maxScrollTop: number,
-  _fallbackRatio: number,
 ): number | null => {
   const points = buildAnchorPoints(anchors);
   if (points.length === 0) return null;

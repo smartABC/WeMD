@@ -17,7 +17,10 @@ import {
   getThemedMermaidDiagram,
 } from "../../utils/mermaidConfig";
 import { renderTableBlocksForPreview } from "../../services/wechatTableRenderer";
-import type { ScrollSyncAdapter } from "../Workspace/editorPreviewScrollSync";
+import {
+  subscribeScrollIntent,
+  type ScrollSyncAdapter,
+} from "../Workspace/editorPreviewScrollSync";
 import {
   mapScrollTopToSourceLine,
   mapSourceLineToScrollTop,
@@ -205,12 +208,7 @@ export function MarkdownPreview({ onScrollSyncReady }: MarkdownPreviewProps) {
       const max = Math.max(0, container.scrollHeight - container.clientHeight);
       const ratio = max > 0 ? container.scrollTop / max : 0;
       return {
-        sourceLine: mapScrollTopToSourceLine(
-          getAnchors(),
-          container.scrollTop,
-          max,
-          ratio,
-        ),
+        sourceLine: mapScrollTopToSourceLine(getAnchors(), container.scrollTop),
         ratio,
       };
     };
@@ -240,6 +238,8 @@ export function MarkdownPreview({ onScrollSyncReady }: MarkdownPreviewProps) {
           if (scrollSubscriber === listener) scrollSubscriber = () => undefined;
         };
       },
+      subscribeUserIntent: (listener) =>
+        subscribeScrollIntent(container, listener),
       subscribeLayoutChange: (listener) => {
         if (typeof ResizeObserver === "undefined") return () => undefined;
         const observer = new ResizeObserver(() => {

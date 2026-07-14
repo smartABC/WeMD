@@ -54,6 +54,7 @@ describe("公众号复制属性语法", () => {
     expect(payload.html).toContain('data-kind="abstract"');
     expect(payload.html).toContain("color: rgb(180, 0, 0)");
     expect(payload.html).not.toContain("data-tool");
+    expect(payload.html).not.toContain("data-wemd-source-");
   });
 
   it("为图片、链接和行内格式内联局部样式", async () => {

@@ -31,6 +31,8 @@ describe("复制 HTML 属性语法", () => {
     expect(mocked.electronClipboardWriteText).toHaveBeenCalledWith(
       '<h2 class="chapter" id="summary" data-kind="heading">摘要</h2>\n',
     );
+    const [html] = mocked.electronClipboardWriteText.mock.calls[0] as [string];
+    expect(html).not.toContain("data-wemd-source-");
   });
 
   it("保留图片、链接和行内格式元素的局部属性", async () => {

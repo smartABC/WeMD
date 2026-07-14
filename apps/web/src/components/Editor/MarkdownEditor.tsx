@@ -23,7 +23,10 @@ import {
   formatImageSize,
 } from "../../services/image/autoCompressImage";
 import { uploadEditorImage } from "../../services/image/imageUploadFlow";
-import type { ScrollSyncAdapter } from "../Workspace/editorPreviewScrollSync";
+import {
+  subscribeScrollIntent,
+  type ScrollSyncAdapter,
+} from "../Workspace/editorPreviewScrollSync";
 
 interface MarkdownEditorProps {
   onScrollSyncReady?: (adapter: ScrollSyncAdapter | null) => void;
@@ -227,6 +230,8 @@ export function MarkdownEditor({ onScrollSyncReady }: MarkdownEditorProps) {
           if (scrollSubscriber === listener) scrollSubscriber = () => undefined;
         };
       },
+      subscribeUserIntent: (listener) =>
+        subscribeScrollIntent(scrollDOM, listener),
     });
 
     viewRef.current = view;

@@ -27,6 +27,8 @@ export function EditorPreviewWorkspace({
   const {
     containerRef,
     ratio,
+    minRatio,
+    maxRatio,
     editorWidth,
     isDragging,
     setDragging,
@@ -54,6 +56,8 @@ export function EditorPreviewWorkspace({
       </div>
       <ResizeHandle
         ratio={ratio}
+        minRatio={minRatio}
+        maxRatio={maxRatio}
         onRatioChange={setRatio}
         onPointerPosition={setRatioFromClientX}
         onReset={resetRatio}

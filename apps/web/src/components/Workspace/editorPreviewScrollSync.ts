@@ -9,6 +9,7 @@ export interface ScrollSyncAdapter {
   getPosition: () => ScrollSyncPosition;
   scrollToPosition: (position: ScrollSyncPosition) => void;
   subscribeScroll: (listener: () => void) => () => void;
+  subscribeUserIntent?: (listener: () => void) => () => void;
   subscribeLayoutChange?: (listener: () => void) => () => void;
 }
 
@@ -22,6 +23,27 @@ const browserFrameScheduler: FrameScheduler = {
   cancel: (handle) => window.cancelAnimationFrame(handle),
 };
 
+const SCROLL_INTENT_EVENTS = [
+  "wheel",
+  "pointerdown",
+  "touchstart",
+  "keydown",
+] as const;
+
+export const subscribeScrollIntent = (
+  element: HTMLElement,
+  listener: () => void,
+): (() => void) => {
+  SCROLL_INTENT_EVENTS.forEach((eventName) =>
+    element.addEventListener(eventName, listener),
+  );
+  return () => {
+    SCROLL_INTENT_EVENTS.forEach((eventName) =>
+      element.removeEventListener(eventName, listener),
+    );
+  };
+};
+
 export const createEditorPreviewScrollSync = (
   frames: FrameScheduler = browserFrameScheduler,
 ) => {
@@ -31,6 +53,7 @@ export const createEditorPreviewScrollSync = (
   let pendingFrame: number | null = null;
   let pendingSource: ScrollSyncSource | null = null;
   let lastPosition: ScrollSyncPosition | null = null;
+  let lastSource: ScrollSyncSource | null = null;
 
   const opposite = (source: ScrollSyncSource): ScrollSyncSource =>
     source === "editor" ? "preview" : "editor";
@@ -48,6 +71,7 @@ export const createEditorPreviewScrollSync = (
 
     const position = sourceAdapter.getPosition();
     lastPosition = position;
+    lastSource = source;
     muteDuringProgrammaticScroll(targetSource);
     targetAdapter.scrollToPosition(position);
   };
@@ -65,14 +89,18 @@ export const createEditorPreviewScrollSync = (
   };
 
   const restoreAfterLayoutChange = () => {
-    if (!lastPosition || pendingFrame !== null) return;
+    const position =
+      lastSource === "editor"
+        ? (adapters.editor?.getPosition() ?? lastPosition)
+        : lastPosition;
+    if (!position || pendingFrame !== null) return;
     pendingFrame = frames.request(() => {
       pendingFrame = null;
       (["editor", "preview"] as const).forEach((source) => {
         const adapter = adapters[source];
         if (!adapter) return;
         muteDuringProgrammaticScroll(source);
-        adapter.scrollToPosition(lastPosition!);
+        adapter.scrollToPosition(position);
       });
     });
   };
@@ -91,13 +119,18 @@ export const createEditorPreviewScrollSync = (
       if (mutedSources.has(source)) return;
       scheduleSync(source);
     });
+    const unsubscribeUserIntent = adapter.subscribeUserIntent?.(() => {
+      mutedSources.delete(source);
+    });
     const unsubscribeLayout = adapter.subscribeLayoutChange?.(
       restoreAfterLayoutChange,
     );
     cleanups[source] = () => {
       unsubscribeScroll();
+      unsubscribeUserIntent?.();
       unsubscribeLayout?.();
     };
+    if (source === "preview") restoreAfterLayoutChange();
   };
 
   const destroy = () => {

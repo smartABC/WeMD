@@ -26,4 +26,33 @@ describe("编辑器与预览分隔条", () => {
     expect(onRatioChange).toHaveBeenNthCalledWith(2, 0.7);
     expect(onReset).toHaveBeenCalledOnce();
   });
+
+  it("拖动时持续更新指针位置并正确结束拖动态", () => {
+    const onPointerPosition = vi.fn();
+    const onDraggingChange = vi.fn();
+    render(
+      <ResizeHandle
+        ratio={0.6}
+        onRatioChange={vi.fn()}
+        onPointerPosition={onPointerPosition}
+        onReset={vi.fn()}
+        onDraggingChange={onDraggingChange}
+      />,
+    );
+
+    const separator = screen.getByRole("separator");
+    Object.assign(separator, {
+      setPointerCapture: vi.fn(),
+      hasPointerCapture: vi.fn(() => true),
+      releasePointerCapture: vi.fn(),
+    });
+    fireEvent.pointerDown(separator, { pointerId: 1, clientX: 500 });
+    fireEvent.pointerMove(separator, { pointerId: 1, clientX: 560 });
+    fireEvent.pointerUp(separator, { pointerId: 1, clientX: 560 });
+
+    expect(onPointerPosition).toHaveBeenNthCalledWith(1, 500);
+    expect(onPointerPosition).toHaveBeenNthCalledWith(2, 560);
+    expect(onDraggingChange).toHaveBeenNthCalledWith(1, true);
+    expect(onDraggingChange).toHaveBeenNthCalledWith(2, false);
+  });
 });
