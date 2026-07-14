@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { modernEditorialTheme, processHtml } from "@wemd/core";
+import {
+  clearGuideTheme,
+  dataBlueprintTheme,
+  easternNotesTheme,
+  modernEditorialTheme,
+  processHtml,
+  whitespaceGalleryTheme,
+} from "@wemd/core";
 import {
   applyLightRootVars,
   resolveInlineStyleVariablesForCopy,
@@ -13,6 +20,37 @@ import { defaultVariables } from "../../components/Theme/ThemeDesigner/defaults"
 import { generateCSS } from "../../components/Theme/ThemeDesigner/generateCSS";
 
 describe("wechat copy css integration", () => {
+  it("将四款场景化主题的关键样式内联到复制内容", () => {
+    const themes = [
+      dataBlueprintTheme,
+      easternNotesTheme,
+      clearGuideTheme,
+      whitespaceGalleryTheme,
+    ];
+    const html = `
+      <h1><span class="content">文章标题</span></h1>
+      <p>正文内容</p>
+      <div class="callout"><div class="callout-title">提示</div><p>提示内容</p></div>
+      <table><thead><tr><th>指标</th></tr></thead><tbody><tr><td>42</td></tr></tbody></table>
+    `;
+
+    for (const theme of themes) {
+      const output = processHtml(html, theme, true, true);
+      const container = document.createElement("div");
+      container.innerHTML = output;
+
+      expect(container.querySelector("h1")?.getAttribute("style")).toContain(
+        "border",
+      );
+      expect(container.querySelector("p")?.style.color).toBeTruthy();
+      expect(
+        container.querySelector(".callout")?.getAttribute("style"),
+      ).toContain("border");
+      expect(container.querySelector("th")?.style.fontWeight).toBeTruthy();
+      expect(output).not.toContain("var(");
+    }
+  });
+
   it("将编辑部手记章节编号转换为可复制的真实节点", () => {
     const originalGetComputedStyle = window.getComputedStyle.bind(window);
     const getComputedStyleSpy = vi

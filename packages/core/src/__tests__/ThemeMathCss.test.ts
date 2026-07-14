@@ -7,6 +7,9 @@ import {
   codeGithubTheme,
   customDefaultTheme,
   cyberpunkNeonTheme,
+  clearGuideTheme,
+  dataBlueprintTheme,
+  easternNotesTheme,
   knowledgeBaseTheme,
   luxuryGoldTheme,
   morandiForestTheme,
@@ -15,6 +18,7 @@ import {
   receiptTheme,
   sunsetFilmTheme,
   templateTheme,
+  whitespaceGalleryTheme,
 } from "../themes";
 
 const themes = {
@@ -25,6 +29,9 @@ const themes = {
   codeGithubTheme,
   customDefaultTheme,
   cyberpunkNeonTheme,
+  clearGuideTheme,
+  dataBlueprintTheme,
+  easternNotesTheme,
   knowledgeBaseTheme,
   luxuryGoldTheme,
   morandiForestTheme,
@@ -33,6 +40,7 @@ const themes = {
   receiptTheme,
   sunsetFilmTheme,
   templateTheme,
+  whitespaceGalleryTheme,
 };
 
 describe("theme math css", () => {

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { modernEditorialTheme } from "@wemd/core";
+import {
+  clearGuideTheme,
+  dataBlueprintTheme,
+  easternNotesTheme,
+  modernEditorialTheme,
+  whitespaceGalleryTheme,
+} from "@wemd/core";
 import { builtInThemes } from "../../store/themes/builtInThemes";
 import { useThemeStore } from "../../store/themeStore";
 
@@ -46,5 +52,23 @@ describe("built-in themes", () => {
     );
 
     useThemeStore.getState().selectTheme("default");
+  });
+
+  it("注册四款可选的场景化主题", () => {
+    const expectedThemes = [
+      ["data-blueprint", "数据蓝图", dataBlueprintTheme],
+      ["eastern-notes", "东方笺谱", easternNotesTheme],
+      ["clear-guide", "清晰指南", clearGuideTheme],
+      ["whitespace-gallery", "留白画册", whitespaceGalleryTheme],
+    ] as const;
+
+    for (const [id, name, css] of expectedThemes) {
+      const theme = builtInThemes.find((item) => item.id === id);
+      expect(theme).toBeTruthy();
+      expect(theme?.name).toBe(name);
+      expect(theme?.isSelectable).not.toBe(false);
+      expect(theme?.css).toContain(css);
+      expect(theme?.css).toContain("#wemd .hljs");
+    }
   });
 });
