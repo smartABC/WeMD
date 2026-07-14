@@ -45,6 +45,68 @@ const buildCopyCss = (themeCss: string) => {
   return `${expandedCss}\n${katexCss}`;
 };
 
+const renderMacSignDotsToImages = (container: HTMLElement): void => {
+  container.querySelectorAll<HTMLElement>(".mac-sign").forEach((macSign) => {
+    const dots = Array.from(macSign.querySelectorAll<HTMLElement>(".mac-dot"));
+    if (dots.length === 0) return;
+
+    try {
+      const scale = 2;
+      const dotMetrics = dots.map((dot) => ({
+        color: dot.style.backgroundColor,
+        height: Number.parseFloat(dot.style.height),
+        marginRight: Number.parseFloat(dot.style.marginRight) || 0,
+        marginTop: Number.parseFloat(dot.style.marginTop) || 0,
+        width: Number.parseFloat(dot.style.width),
+      }));
+      const width = dotMetrics.reduce(
+        (total, dot) => total + dot.width + dot.marginRight,
+        0,
+      );
+      const height =
+        Number.parseFloat(macSign.style.height) ||
+        Math.max(...dotMetrics.map((dot) => dot.marginTop + dot.height));
+      if (!width || !height || dotMetrics.some((dot) => !dot.color)) return;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+
+      context.scale(scale, scale);
+      let offsetX = 0;
+      dotMetrics.forEach((dot) => {
+        context.beginPath();
+        context.arc(
+          offsetX + dot.width / 2,
+          dot.marginTop + dot.height / 2,
+          Math.min(dot.width, dot.height) / 2,
+          0,
+          Math.PI * 2,
+        );
+        context.fillStyle = dot.color;
+        context.fill();
+        offsetX += dot.width + dot.marginRight;
+      });
+
+      const image = document.createElement("img");
+      image.src = canvas.toDataURL("image/png");
+      image.alt = "";
+      image.width = width;
+      image.height = height;
+      image.style.display = "block";
+      image.style.width = `${width}px`;
+      image.style.height = `${height}px`;
+
+      macSign.removeAttribute("aria-hidden");
+      macSign.replaceChildren(image);
+    } catch (error) {
+      console.warn("Mac Bar PNG 绘制失败，保留 HTML 圆点", error);
+    }
+  });
+};
+
 /**
  * 将 HTML 中的 checkbox 转换为 emoji
  * 微信公众号会过滤 <input> 标签，需要转为 emoji 替代
@@ -154,6 +216,7 @@ export async function copyToWechat(
     stripHiddenMathMarkupForWechat(container);
     await renderMermaidBlocks(container);
     await renderTableBlocks(container, getTableWrapEnabled());
+    renderMacSignDotsToImages(container);
     normalizeCopyContainer(container);
 
     let copied = false;
