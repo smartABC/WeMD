@@ -35,6 +35,8 @@ export interface CustomTheme {
   name: string;
   css: string;
   isBuiltIn: boolean;
+  /** 是否允许用户主动选择；设为 false 的内置主题仅用于兼容历史文章 */
+  isSelectable?: boolean;
   createdAt: string;
   updatedAt: string;
   /** 编辑模式：创建时确定，不可更改 */
@@ -51,6 +53,9 @@ export interface ThemeDefinition {
   name: string;
   css: string;
 }
+
+export const isThemeSelectable = (theme: CustomTheme): boolean =>
+  theme.isSelectable !== false;
 
 /**
  * 内置主题列表
@@ -77,6 +82,7 @@ export const builtInThemes: CustomTheme[] = [
     name: "极光玻璃",
     css: basicTheme + "\n" + auroraGlassTheme + "\n" + codeGithubTheme,
     isBuiltIn: true,
+    isSelectable: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -85,6 +91,7 @@ export const builtInThemes: CustomTheme[] = [
     name: "包豪斯",
     css: basicTheme + "\n" + bauhausTheme + "\n" + codeGithubTheme,
     isBuiltIn: true,
+    isSelectable: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -93,6 +100,7 @@ export const builtInThemes: CustomTheme[] = [
     name: "赛博朋克",
     css: basicTheme + "\n" + cyberpunkNeonTheme + "\n" + codeGithubTheme,
     isBuiltIn: true,
+    isSelectable: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -133,6 +141,7 @@ export const builtInThemes: CustomTheme[] = [
     name: "新粗野主义",
     css: basicTheme + "\n" + neoBrutalismTheme + "\n" + codeGithubTheme,
     isBuiltIn: true,
+    isSelectable: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -157,6 +166,7 @@ export const builtInThemes: CustomTheme[] = [
     name: "主题模板",
     css: basicTheme + "\n" + templateTheme + "\n" + codeGithubTheme,
     isBuiltIn: true,
+    isSelectable: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },

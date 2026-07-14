@@ -42,6 +42,15 @@ describe("ThemePanel", () => {
       updatedAt: new Date().toISOString(),
     },
     {
+      id: "bauhaus",
+      name: "包豪斯",
+      css: "#wemd{}",
+      isBuiltIn: true,
+      isSelectable: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
       id: "custom1",
       name: "自定义主题",
       css: "body{}",
@@ -134,6 +143,9 @@ describe("ThemePanel", () => {
       screen.getByRole("button", { name: "自定义主题" }),
     ).toBeInTheDocument();
     expect(screen.getByText("内置主题")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "包豪斯" }),
+    ).not.toBeInTheDocument();
   });
 
   it("calls onClose when close button clicked", () => {

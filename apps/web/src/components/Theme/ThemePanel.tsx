@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import toast from "react-hot-toast";
 import { useEditorStore } from "../../store/editorStore";
 import { useThemeStore } from "../../store/themeStore";
+import { isThemeSelectable } from "../../store/themes/builtInThemes";
 import { useHistoryStore } from "../../store/historyStore";
 import { platformActions } from "../../lib/platformAdapter";
 import { type DesignerVariables, defaultVariables } from "./ThemeDesigner";
@@ -361,7 +362,9 @@ export function ThemePanel({ open, onClose }: ThemePanelProps) {
     }
   };
 
-  const builtInThemes = allThemes.filter((item) => item.isBuiltIn);
+  const builtInThemes = allThemes.filter(
+    (item) => item.isBuiltIn && isThemeSelectable(item),
+  );
   const customThemes = allThemes.filter((item) => !item.isBuiltIn);
   const isVisualEditing =
     (isCreating && editorMode === "visual") ||

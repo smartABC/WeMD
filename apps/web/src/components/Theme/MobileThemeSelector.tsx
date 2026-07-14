@@ -1,5 +1,6 @@
 import { X, Check } from "lucide-react";
 import { useThemeStore } from "../../store/themeStore";
+import { isThemeSelectable } from "../../store/themes/builtInThemes";
 import "./MobileThemeSelector.css";
 
 interface MobileThemeSelectorProps {
@@ -18,11 +19,12 @@ export function MobileThemeSelector({
   const currentThemeId = useThemeStore((state) => state.themeId);
   const selectTheme = useThemeStore((state) => state.selectTheme);
   const getAllThemes = useThemeStore((state) => state.getAllThemes);
-  const customThemesFromStore = useThemeStore((state) => state.customThemes);
 
   // 获取所有主题并分组
   const allThemes = getAllThemes();
-  const builtInThemes = allThemes.filter((t) => t.isBuiltIn);
+  const builtInThemes = allThemes.filter(
+    (theme) => theme.isBuiltIn && isThemeSelectable(theme),
+  );
   const customThemes = allThemes.filter((t) => !t.isBuiltIn);
 
   if (!open) return null;
