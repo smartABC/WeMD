@@ -50,7 +50,8 @@ export const createEditorPreviewScrollSync = (
   const adapters: Partial<Record<ScrollSyncSource, ScrollSyncAdapter>> = {};
   const cleanups: Partial<Record<ScrollSyncSource, () => void>> = {};
   const mutedSources = new Set<ScrollSyncSource>();
-  let pendingFrame: number | null = null;
+  let pendingSyncFrame: number | null = null;
+  let pendingRestoreFrame: number | null = null;
   let pendingSource: ScrollSyncSource | null = null;
   let lastPosition: ScrollSyncPosition | null = null;
   let lastSource: ScrollSyncSource | null = null;
@@ -78,10 +79,14 @@ export const createEditorPreviewScrollSync = (
 
   const scheduleSync = (source: ScrollSyncSource) => {
     pendingSource = source;
-    if (pendingFrame !== null) return;
+    if (pendingRestoreFrame !== null) {
+      frames.cancel(pendingRestoreFrame);
+      pendingRestoreFrame = null;
+    }
+    if (pendingSyncFrame !== null) return;
 
-    pendingFrame = frames.request(() => {
-      pendingFrame = null;
+    pendingSyncFrame = frames.request(() => {
+      pendingSyncFrame = null;
       const sourceToSync = pendingSource;
       pendingSource = null;
       if (sourceToSync) syncFrom(sourceToSync);
@@ -93,9 +98,10 @@ export const createEditorPreviewScrollSync = (
       lastSource === "editor"
         ? (adapters.editor?.getPosition() ?? lastPosition)
         : lastPosition;
-    if (!position || pendingFrame !== null) return;
-    pendingFrame = frames.request(() => {
-      pendingFrame = null;
+    if (!position || pendingSyncFrame !== null || pendingRestoreFrame !== null)
+      return;
+    pendingRestoreFrame = frames.request(() => {
+      pendingRestoreFrame = null;
       (["editor", "preview"] as const).forEach((source) => {
         const adapter = adapters[source];
         if (!adapter) return;
@@ -136,8 +142,10 @@ export const createEditorPreviewScrollSync = (
   const destroy = () => {
     cleanups.editor?.();
     cleanups.preview?.();
-    if (pendingFrame !== null) frames.cancel(pendingFrame);
-    pendingFrame = null;
+    if (pendingSyncFrame !== null) frames.cancel(pendingSyncFrame);
+    if (pendingRestoreFrame !== null) frames.cancel(pendingRestoreFrame);
+    pendingSyncFrame = null;
+    pendingRestoreFrame = null;
     pendingSource = null;
   };
 

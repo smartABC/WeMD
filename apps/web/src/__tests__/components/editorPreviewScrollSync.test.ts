@@ -6,15 +6,18 @@ import {
 } from "../../components/Workspace/editorPreviewScrollSync";
 
 const createFrameQueue = () => {
-  const queue: FrameRequestCallback[] = [];
+  let nextHandle = 1;
+  const queue = new Map<number, FrameRequestCallback>();
   return {
     request: (callback: FrameRequestCallback) => {
-      queue.push(callback);
-      return queue.length;
+      const handle = nextHandle++;
+      queue.set(handle, callback);
+      return handle;
     },
-    cancel: vi.fn(),
+    cancel: vi.fn((handle: number) => queue.delete(handle)),
     flush: () => {
-      const callbacks = queue.splice(0);
+      const callbacks = Array.from(queue.values());
+      queue.clear();
       callbacks.forEach((callback) => callback(0));
     },
   };
@@ -105,6 +108,29 @@ describe("编辑器与预览双向滚动协调", () => {
 
     editor.emitScroll();
     frames.flush();
+    preview.emitUserIntent();
+    preview.emitScroll();
+    frames.flush();
+
+    expect(editor.adapter.scrollToPosition).toHaveBeenLastCalledWith({
+      sourceLine: 4,
+      ratio: 0.2,
+    });
+    coordinator.destroy();
+  });
+
+  it("用户滚动会抢占同帧内尚未执行的布局恢复", () => {
+    const frames = createFrameQueue();
+    const editor = createAdapter({ sourceLine: 18, ratio: 0.6 });
+    const preview = createAdapter({ sourceLine: 4, ratio: 0.2 });
+    const coordinator = createEditorPreviewScrollSync(frames);
+    coordinator.setAdapter("editor", editor.adapter);
+    coordinator.setAdapter("preview", preview.adapter);
+
+    editor.emitScroll();
+    frames.flush();
+    frames.flush();
+    preview.emitLayoutChange();
     preview.emitUserIntent();
     preview.emitScroll();
     frames.flush();
