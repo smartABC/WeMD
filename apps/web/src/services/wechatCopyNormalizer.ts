@@ -6,6 +6,7 @@
  * - 根节点 padding 迁移到内层元素
  * - 背景色下沉到子块
  */
+import { materializeCodeLineBreaksForWechat } from "./wechatCodeBlockCompat";
 
 // ── 颜色透明度判断 ──────────────────────────────────
 
@@ -471,6 +472,7 @@ const normalizeBlockBackgroundForWechat = (
 // ── 对外入口 ────────────────────────────────────────
 
 export const normalizeCopyContainer = (container: HTMLElement): void => {
+  materializeCodeLineBreaksForWechat(container);
   transformWemdRootSectionToDiv(container);
   stripCopyMetadata(container);
   const rootBgColor = extractRootBackgroundColor(container);
