@@ -9,6 +9,8 @@ describe("Markdown 属性语法帮助", () => {
     fireEvent.click(screen.getByRole("button", { name: "语法帮助" }));
 
     expect(screen.getByText("{.class #id}")).toBeInTheDocument();
-    expect(screen.getByText("局部样式属性")).toBeInTheDocument();
+    expect(screen.getByText("块级属性")).toBeInTheDocument();
+    expect(screen.getByText("**文字**{.class}")).toBeInTheDocument();
+    expect(screen.getByText("行内/图片属性")).toBeInTheDocument();
   });
 });

@@ -15,7 +15,8 @@ const syntaxItems = [
   { syntax: "X^2^", desc: "上标" },
   { syntax: "> [!NOTE]", desc: "提示块" },
   { syntax: "- [ ] 任务", desc: "任务列表" },
-  { syntax: "{.class #id}", desc: "局部样式属性" },
+  { syntax: "{.class #id}", desc: "块级属性" },
+  { syntax: "**文字**{.class}", desc: "行内/图片属性" },
 ];
 
 export function SyntaxHelpPopover() {

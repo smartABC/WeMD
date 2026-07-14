@@ -55,4 +55,27 @@ describe("公众号复制属性语法", () => {
     expect(payload.html).toContain("color: rgb(180, 0, 0)");
     expect(payload.html).not.toContain("data-tool");
   });
+
+  it("为图片、链接和行内格式内联局部样式", async () => {
+    await copyToWechat(
+      "![封面](https://example.com/cover.png){.hero-image #cover}\n\n[查看详情](https://example.com){.cta-link}\n\n这是 **重点内容**{.inline-highlight}。",
+      `
+        #wemd .hero-image { border-radius: 12px; }
+        #wemd .cta-link { color: rgb(0, 90, 180); }
+        #wemd .inline-highlight { background-color: rgb(255, 230, 120); }
+      `,
+    );
+
+    const [payload] = mocked.electronClipboardWrite.mock.calls[0] as [
+      { html: string; text: string },
+    ];
+    expect(payload.html).toContain('class="hero-image"');
+    expect(payload.html).toContain('id="cover"');
+    expect(payload.html).toContain("border-radius: 12px");
+    expect(payload.html).toContain('class="cta-link"');
+    expect(payload.html).toContain("color: rgb(0, 90, 180)");
+    expect(payload.html).toContain('class="inline-highlight"');
+    expect(payload.html).toContain("background-color: rgb(255, 230, 120)");
+    expect(payload.html).not.toContain("data-tool");
+  });
 });

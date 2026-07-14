@@ -45,18 +45,16 @@ describe("Markdown 属性语法", () => {
     expect(html).not.toContain("onclick=");
   });
 
-  it("不把转义语法、普通大括号、公式和未开放的行内属性误解析", () => {
+  it("不把转义语法、普通大括号和公式误解析", () => {
     const parser = createMarkdownParser({ mathRenderer: "katex" });
     const html = parser.render(
-      "\\{.standalone}\n\n转义属性：\\{.notice}\n\n普通内容：{尚未完成}\n\n公式：$x^{2}$\n\n这是 **重点**{.inline-mark} 内容。",
+      "\\{.standalone}\n\n转义属性：\\{.notice}\n\n普通内容：{尚未完成}\n\n公式：$x^{2}$",
     );
 
     expect(html).toContain("{.standalone}");
     expect(html).toContain("转义属性：{.notice}");
     expect(html).toContain("普通内容：{尚未完成}");
     expect(html).toContain('class="katex"');
-    expect(html).toContain("{.inline-mark}");
-    expect(html).not.toContain('class="inline-mark"');
   });
 
   it("不为代码围栏应用属性语法", () => {
@@ -113,5 +111,64 @@ describe("Markdown 属性语法", () => {
     expect(html).toContain("<p>首段 {.loose-list-item}</p>");
     expect(html).toContain('<p class="nested-paragraph">第二段</p>');
     expect(html).not.toContain('class="loose-list-item"');
+  });
+
+  it("为图片添加合法属性且不允许覆盖图片来源", () => {
+    const parser = createMarkdownParser({ mathRenderer: "katex" });
+    const html = parser.render(
+      '![封面](cover.png "封面标题"){.hero-image #cover data-kind=hero src=evil.png alt=evil onclick="alert(1)"}',
+    );
+
+    expect(html).toContain("<figure>");
+    expect(html).toContain('src="cover.png"');
+    expect(html).toContain('alt="封面"');
+    expect(html).toContain('class="hero-image"');
+    expect(html).toContain('id="cover"');
+    expect(html).toContain('data-kind="hero"');
+    expect(html).not.toContain("evil.png");
+    expect(html).not.toContain('onclick="');
+    expect(html).not.toContain("{.hero-image");
+  });
+
+  it("为普通链接添加合法属性且不允许覆盖链接地址", () => {
+    const parser = createMarkdownParser({ mathRenderer: "katex" });
+    const html = parser.render(
+      '[查看详情](https://example.com){.cta-link #details data-kind=external href="https://evil.example" onclick="alert(1)"}',
+    );
+
+    expect(html).toContain('href="https://example.com"');
+    expect(html).toContain('class="cta-link"');
+    expect(html).toContain('id="details"');
+    expect(html).toContain('data-kind="external"');
+    expect(html).not.toContain("evil.example");
+    expect(html).not.toContain('onclick="');
+    expect(html).not.toContain("{.cta-link");
+  });
+
+  it("链接被转换为脚注时保留无承载目标的属性文本", () => {
+    const parser = createMarkdownParser({ mathRenderer: "katex" });
+    const html = parser.render(
+      '[资料来源](https://example.com "来源说明"){.source-link}',
+    );
+
+    expect(html).toContain("资料来源");
+    expect(html).toContain("{.source-link}");
+    expect(html).not.toContain('class="source-link"');
+  });
+
+  it("为现有行内格式元素添加局部属性", () => {
+    const parser = createMarkdownParser({ mathRenderer: "katex" });
+    const html = parser.render(
+      "*斜体*{.emphasis} **粗体**{.strong} ~~删除~~{.deleted} `代码`{.inline-code} ==高亮=={.marked} ++下划线++{.underlined} H~2~{.subscript} X^2^{.superscript}",
+    );
+
+    expect(html).toContain('<em class="emphasis">斜体</em>');
+    expect(html).toContain('<strong class="strong">粗体</strong>');
+    expect(html).toContain('<s class="deleted">删除</s>');
+    expect(html).toContain('<code class="inline-code">代码</code>');
+    expect(html).toContain('<mark class="marked">高亮</mark>');
+    expect(html).toContain('<u class="underlined">下划线</u>');
+    expect(html).toContain('H<sub class="subscript">2</sub>');
+    expect(html).toContain('X<sup class="superscript">2</sup>');
   });
 });

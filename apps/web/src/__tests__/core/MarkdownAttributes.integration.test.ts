@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import { createMarkdownParser, processHtml } from "@wemd/core";
 
 const markdown =
-  "## 本章摘要 {.chapter-title #chapter-summary}\n\n这是一段摘要。 {.summary data-kind=abstract}";
+  "## 本章摘要 {.chapter-title #chapter-summary}\n\n这是一段摘要。 {.summary data-kind=abstract}\n\n![封面](https://example.com/cover.png){.hero-image #cover}\n\n[查看详情](https://example.com){.cta-link}\n\n这是 **重点内容**{.inline-highlight}。";
 const css = `
   #wemd .chapter-title { color: rgb(20, 80, 140); }
   #wemd .summary[data-kind="abstract"] { background-color: rgb(245, 240, 220); }
+  #wemd .hero-image { border-radius: 12px; }
+  #wemd .cta-link { text-decoration: underline; }
+  #wemd .inline-highlight { background-color: rgb(255, 230, 120); }
 `;
 
 describe("Markdown 属性消费链路", () => {
@@ -18,6 +21,11 @@ describe("Markdown 属性消费链路", () => {
     );
     expect(html).toContain(
       '<p data-tool="WeMD编辑器" class="summary" data-kind="abstract">这是一段摘要。</p>',
+    );
+    expect(html).toContain('class="hero-image" id="cover"');
+    expect(html).toContain('class="cta-link"');
+    expect(html).toContain(
+      '<strong class="inline-highlight">重点内容</strong>',
     );
   });
 
@@ -34,5 +42,15 @@ describe("Markdown 属性消费链路", () => {
       container.querySelector<HTMLElement>('[data-kind="abstract"]')?.style
         .backgroundColor,
     ).toBe("rgb(245, 240, 220)");
+    expect(
+      container.querySelector<HTMLElement>("#cover")?.style.borderRadius,
+    ).toBe("12px");
+    expect(
+      container.querySelector<HTMLElement>(".cta-link")?.style.textDecoration,
+    ).toBe("underline");
+    expect(
+      container.querySelector<HTMLElement>(".inline-highlight")?.style
+        .backgroundColor,
+    ).toBe("rgb(255, 230, 120)");
   });
 });

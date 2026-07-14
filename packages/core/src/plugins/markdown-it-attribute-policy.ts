@@ -7,7 +7,7 @@ const ATTRIBUTE_EXPRESSION =
 const ATTRIBUTE_BLOCK = /\{([^{}\n]*)\}/g;
 const ATTRIBUTE_ONLY = /^\s*\{[^{}\n]*\}\s*$/;
 const HORIZONTAL_RULE_WITH_ATTRIBUTES = /^ {0,3}[-*_]{3,} ?\{/;
-const SUPPORTED_TAGS = new Set([
+const SUPPORTED_BLOCK_TAGS = new Set([
   "p",
   "h1",
   "h2",
@@ -17,6 +17,17 @@ const SUPPORTED_TAGS = new Set([
   "h6",
   "table",
 ]);
+const SUPPORTED_PAIRED_INLINE_TAGS = new Set([
+  "a",
+  "em",
+  "strong",
+  "s",
+  "mark",
+  "u",
+  "sub",
+  "sup",
+]);
+const SUPPORTED_ZERO_NESTING_TAGS = new Set(["img", "code"]);
 const LIST_TOKEN_TYPES = new Set([
   "bullet_list_open",
   "bullet_list_close",
@@ -68,6 +79,12 @@ const isReservedAttribute = ([name, value]: [string, string]): boolean => {
     normalizedName.startsWith("data-wemd-")
   );
 };
+
+const isSupportedAttributeTarget = (token: Token): boolean =>
+  (token.nesting === 1 &&
+    (SUPPORTED_BLOCK_TAGS.has(token.tag) ||
+      SUPPORTED_PAIRED_INLINE_TAGS.has(token.tag))) ||
+  (token.nesting === 0 && SUPPORTED_ZERO_NESTING_TAGS.has(token.tag));
 
 const createPlaceholders = (state: StateCore): BracePlaceholders => {
   let originalText = state.src;
@@ -148,14 +165,20 @@ export default (md: MarkdownIt): void => {
           token.children?.forEach((child, index, children) => {
             if (child.type !== "text") return;
             const previous = children[index - 1];
+            const followsSupportedInline =
+              (previous?.nesting === -1 &&
+                SUPPORTED_PAIRED_INLINE_TAGS.has(previous.tag)) ||
+              (previous?.nesting === 0 &&
+                SUPPORTED_ZERO_NESTING_TAGS.has(previous.tag));
             const followsInlineElement =
               child.content.startsWith("{") &&
-              (previous?.nesting === -1 ||
-                previous?.type === "image" ||
-                previous?.type === "code_inline");
+              previous !== undefined &&
+              previous.type !== "text" &&
+              previous.type !== "softbreak";
             child.content = protectBraces(
               child.content,
-              allowAttributes && !followsInlineElement,
+              followsSupportedInline ||
+                (allowAttributes && !followsInlineElement),
               placeholders,
             );
           });
@@ -177,7 +200,7 @@ export default (md: MarkdownIt): void => {
         token.content = restoreBraces(token.content, placeholders);
         token.info = restoreBraces(token.info, placeholders);
 
-        if (SUPPORTED_TAGS.has(token.tag) && token.nesting === 1) {
+        if (isSupportedAttributeTarget(token)) {
           token.attrs =
             token.attrs?.filter(
               (attribute) => !isReservedAttribute(attribute),
