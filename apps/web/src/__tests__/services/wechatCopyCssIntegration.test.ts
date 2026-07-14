@@ -4,6 +4,7 @@ import {
   dataBlueprintTheme,
   easternNotesTheme,
   modernEditorialTheme,
+  createMarkdownParser,
   processHtml,
   whitespaceGalleryTheme,
 } from "@wemd/core";
@@ -441,9 +442,10 @@ describe("wechat copy css integration", () => {
     expect(calloutTitle.style.color).toBe("rgb(26, 26, 26)");
   });
 
-  it("keeps mac bar svg outside code in copy pipeline", () => {
-    const html =
-      '<pre class="custom"><span class="mac-sign" style="padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg" width="45" height="13" viewBox="0 0 450 130"></svg></span><code class="hljs language-ts">  const a = 1;\n    console.log(a);</code></pre>';
+  it("复制链路保留无需加载的 Mac Bar 圆点", () => {
+    const html = createMarkdownParser({ showMacBar: true }).render(
+      "```ts\n  const a = 1;\n    console.log(a);\n```",
+    );
     const css = `
       #wemd pre.custom > .mac-sign {
         display: block;
@@ -459,13 +461,22 @@ describe("wechat copy css integration", () => {
     normalizeCopyContainer(container);
 
     const pre = container.querySelector("pre") as HTMLElement | null;
-    const svg = container.querySelector("pre > span > svg");
+    const macSign = container.querySelector(
+      "pre > .mac-sign",
+    ) as HTMLElement | null;
+    const dots = container.querySelectorAll("pre > .mac-sign > .mac-dot");
     const code = container.querySelector("pre > code");
 
     expect(pre).toBeTruthy();
-    expect(svg).toBeTruthy();
+    expect(macSign?.style.width).toBe("");
+    expect(macSign?.style.height).toBe("13px");
+    expect(dots).toHaveLength(3);
+    expect((dots[0] as HTMLElement).style.width).toBe("10px");
+    expect((dots[0] as HTMLElement).style.height).toBe("10px");
+    expect((dots[0] as HTMLElement).style.marginTop).toBe("1.5px");
+    expect(container.querySelector("svg")).toBeNull();
     expect(code).toBeTruthy();
-    expect(code!.querySelector("svg")).toBeNull();
+    expect(code!.querySelector(".mac-dot")).toBeNull();
 
     const preChildren = Array.from(pre!.children).map((el) => el.tagName);
     expect(preChildren[0]).toBe("SPAN");

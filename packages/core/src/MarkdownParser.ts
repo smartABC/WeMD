@@ -40,13 +40,15 @@ export interface MarkdownParserOptions {
   mathRenderer?: "auto" | "katex";
 }
 
-const MAC_CODE_SVG = `
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" x="0px" y="0px" width="45px" height="13px" viewBox="0 0 450 130">
-  <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)" />
-  <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)" />
-  <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)" />
-</svg>
-`.trim();
+const MAC_CODE_DOTS = ["rgb(237,108,96)", "rgb(247,193,81)", "rgb(100,200,86)"]
+  .map(
+    (color, index) =>
+      `<span class="mac-dot" style="display:inline-block;width:10px;height:10px;margin-top:1.5px;${index < 2 ? "margin-right:7.5px;" : ""}border-radius:50%;background:${color};"></span>`,
+  )
+  .join("");
+
+const renderMacSign = (): string =>
+  `<span class="mac-sign" aria-hidden="true" style="display:block;height:13px;padding:10px 14px 0;line-height:0;">${MAC_CODE_DOTS}</span>`;
 
 export const createMarkdownParser = (options: MarkdownParserOptions = {}) => {
   const showMacBar = options.showMacBar === true;
@@ -66,9 +68,7 @@ export const createMarkdownParser = (options: MarkdownParserOptions = {}) => {
       if (lang && highlightjs.getLanguage(lang)) {
         try {
           const formatted = highlightjs.highlight(lang, str, true).value;
-          const macSign = showMacBar
-            ? `<span class="mac-sign" style="padding: 10px 14px 0;">${MAC_CODE_SVG}</span>`
-            : "";
+          const macSign = showMacBar ? renderMacSign() : "";
           return (
             '<pre class="custom">' +
             macSign +
@@ -80,9 +80,7 @@ export const createMarkdownParser = (options: MarkdownParserOptions = {}) => {
           // Ignore highlight errors
         }
       }
-      const macSign = showMacBar
-        ? `<span class="mac-sign" style="padding: 10px 14px 0;">${MAC_CODE_SVG}</span>`
-        : "";
+      const macSign = showMacBar ? renderMacSign() : "";
       return (
         '<pre class="custom">' +
         macSign +

@@ -15,15 +15,23 @@ describe("MarkdownParser code block", () => {
     expect(html).not.toContain("<svg");
   });
 
-  it("显式开启后输出 md 风格的 mac-sign 结构", () => {
+  it("显式开启后输出无需 SVG 加载的 Mac Bar 圆点", () => {
     const parser = createMarkdownParser({ showMacBar: true });
     const html = parser.render("```ts\nconst a = 1;\n```");
 
     expect(html).toContain('<pre class="custom">');
     expect(html).toContain('<span class="mac-sign"');
-    expect(html).toContain("<svg");
-    expect(html).toMatch(/<pre[^>]*>\s*<span[^>]*>[\s\S]*<\/span>\s*<code/i);
-    expect(html).not.toMatch(/<code[^>]*>[\s\S]*<svg/i);
+    expect(html).toContain("display:block;height:13px;");
+    expect(html).not.toMatch(/class="mac-sign"[^>]*width:45px/);
+    expect(html.match(/class="mac-dot"/g)).toHaveLength(3);
+    expect(
+      html.match(/width:10px;height:10px;margin-top:1.5px;/g),
+    ).toHaveLength(3);
+    expect(html).not.toContain("<svg");
+    expect(html).toMatch(
+      /<pre[^>]*>\s*<span[^>]*>[\s\S]*class="mac-dot"[\s\S]*<\/span>\s*<code/i,
+    );
+    expect(html).not.toMatch(/<code[^>]*>[\s\S]*class="mac-dot"/i);
   });
 
   it("指定 katex 渲染器时不使用 MathJax SVG", () => {

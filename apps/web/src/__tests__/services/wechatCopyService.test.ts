@@ -165,34 +165,6 @@ describe("wechatCopyService clipboard strategy", () => {
       configurable: true,
       value: undefined,
     });
-
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
-      scale: vi.fn(),
-      drawImage: vi.fn(),
-    } as unknown as CanvasRenderingContext2D);
-    vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue(
-      "data:image/png;base64,test",
-    );
-
-    class MockImage {
-      onload: null | (() => void) = null;
-      onerror: null | (() => void) = null;
-
-      set src(_value: string) {
-        queueMicrotask(() => {
-          this.onload?.();
-        });
-      }
-    }
-
-    Object.defineProperty(window, "Image", {
-      configurable: true,
-      value: MockImage,
-    });
-    Object.defineProperty(globalThis, "Image", {
-      configurable: true,
-      value: MockImage,
-    });
   });
 
   it("prefers native execCommand copy", async () => {
@@ -411,9 +383,9 @@ describe("wechatCopyService clipboard strategy", () => {
     expect(mermaidParagraph?.style.color).toBe("rgb(26, 26, 26)");
   });
 
-  it("converts mac-sign svg to img before clipboard write", async () => {
+  it("复制时保留 Mac Bar 圆点且不产生 SVG 或图片", async () => {
     mocked.processHtmlMock.mockReturnValue(
-      '<section id="wemd"><pre class="custom"><span class="mac-sign" style="padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg" width="45" height="13" viewBox="0 0 450 130"></svg></span><code class="hljs">const a = 1;</code></pre></section>',
+      '<section id="wemd"><pre class="custom"><span class="mac-sign" aria-hidden="true" style="display:block;padding:10px 14px 0;line-height:0;"><span class="mac-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgb(237,108,96);"></span><span class="mac-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgb(247,193,81);"></span><span class="mac-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgb(100,200,86);"></span></span><code class="hljs">const a = 1;</code></pre></section>',
     );
 
     Object.defineProperty(window, "electron", {
@@ -442,60 +414,8 @@ describe("wechatCopyService clipboard strategy", () => {
     const [payload] = mocked.electronClipboardWrite.mock.calls[0] as [
       { html: string; text: string },
     ];
-    expect(payload.html).toContain("<img");
+    expect(payload.html.match(/class="mac-dot"/g)).toHaveLength(3);
     expect(payload.html).not.toContain("<svg");
-    expect(payload.html).toContain("data:image/png;base64,test");
-  });
-
-  it("falls back to original svg when mac-sign png conversion fails", async () => {
-    mocked.processHtmlMock.mockReturnValue(
-      '<section id="wemd"><pre class="custom"><span class="mac-sign" style="padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg" width="45" height="13" viewBox="0 0 450 130"></svg></span><code class="hljs">const a = 1;</code></pre></section>',
-    );
-
-    class BrokenImage {
-      onload: null | (() => void) = null;
-      onerror: null | (() => void) = null;
-
-      set src(_value: string) {
-        queueMicrotask(() => {
-          this.onerror?.();
-        });
-      }
-    }
-
-    Object.defineProperty(window, "Image", {
-      configurable: true,
-      value: BrokenImage,
-    });
-    Object.defineProperty(globalThis, "Image", {
-      configurable: true,
-      value: BrokenImage,
-    });
-
-    Object.defineProperty(window, "electron", {
-      configurable: true,
-      value: {
-        isElectron: true,
-        platform: "darwin",
-        clipboard: {
-          writeHTML: mocked.electronClipboardWrite.mockResolvedValue({
-            success: true,
-          }),
-        },
-      },
-    });
-
-    await copyToWechat(
-      "test",
-      "#wemd pre.custom > .mac-sign { display: block; }",
-      { showMacBar: true },
-    );
-
-    const [payload] = mocked.electronClipboardWrite.mock.calls[0] as [
-      { html: string; text: string },
-    ];
-    expect(payload.html).toContain("<svg");
-    expect(payload.html).not.toContain("data:image/png;base64,test");
-    expect(mocked.toastSuccess).toHaveBeenCalled();
+    expect(payload.html).not.toContain("<img");
   });
 });
