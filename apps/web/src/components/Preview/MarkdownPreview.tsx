@@ -8,7 +8,9 @@ import { hasMathFormula, renderMathInElement } from "../../utils/katexRenderer";
 import { convertLinksToFootnotes } from "../../utils/linkFootnote";
 import {
   getLinkToFootnoteEnabled,
+  getTableWrapEnabled,
   LINK_TO_FOOTNOTE_EVENT,
+  TABLE_WRAP_EVENT,
 } from "../Editor/ToolbarState";
 import {
   getMermaidConfig,
@@ -31,6 +33,9 @@ export function MarkdownPreview() {
   const [html, setHtml] = useState("");
   const [linkToFootnoteEnabled, setLinkToFootnoteEnabledState] = useState(() =>
     getLinkToFootnoteEnabled(),
+  );
+  const [tableWrapEnabled, setTableWrapEnabledState] = useState(() =>
+    getTableWrapEnabled(),
   );
   const previewRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -145,21 +150,15 @@ export function MarkdownPreview() {
     return () => clearTimeout(timer);
   }, [html, mermaidConfigKey, designerVars]);
 
-  // 表格渲染为图片：让预览效果与手机阅读体验一致
+  // 表格布局与发布偏好保持一致，开关变化时直接重排现有 DOM。
   useEffect(() => {
     if (!previewRef.current || !html) return;
 
     const tables = previewRef.current.querySelectorAll(".table-container");
     if (tables.length === 0) return;
 
-    const timer = setTimeout(() => {
-      if (previewRef.current) {
-        renderTableBlocksForPreview(previewRef.current);
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [html]);
+    renderTableBlocksForPreview(previewRef.current, tableWrapEnabled);
+  }, [html, tableWrapEnabled]);
 
   // 处理预览栏滚动事件
   const handlePreviewScroll = useCallback(() => {
@@ -234,6 +233,24 @@ export function MarkdownPreview() {
       window.removeEventListener(
         LINK_TO_FOOTNOTE_EVENT,
         handleLinkToFootnoteChange as EventListener,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleTableWrapChange = (event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      setTableWrapEnabledState(customEvent.detail);
+    };
+
+    window.addEventListener(
+      TABLE_WRAP_EVENT,
+      handleTableWrapChange as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        TABLE_WRAP_EVENT,
+        handleTableWrapChange as EventListener,
       );
     };
   }, []);

@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ListEnd,
+  WrapText,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -24,7 +25,11 @@ import {
   mermaidPrimaryTemplates,
   textFormatTools,
 } from "./toolbarConfigs";
-import { setLinkToFootnoteEnabled } from "./ToolbarState";
+import {
+  getTableWrapEnabled,
+  setLinkToFootnoteEnabled,
+  setTableWrapEnabled,
+} from "./ToolbarState";
 import { SyntaxHelpPopover } from "./SyntaxHelpPopover";
 import "./Toolbar.css";
 
@@ -51,6 +56,7 @@ export function Toolbar({ onInsert }: ToolbarProps) {
     const saved = localStorage.getItem("wemd-link-to-footnote");
     return saved === "true";
   });
+  const [tableWrap, setTableWrap] = useState(() => getTableWrapEnabled());
 
   // 同步状态到全局变量和 localStorage
   useEffect(() => {
@@ -185,6 +191,15 @@ export function Toolbar({ onInsert }: ToolbarProps) {
     const next = !linkToFootnote;
     setLinkToFootnote(next);
     toast.success(next ? "已开启：外链转脚注" : "已关闭：外链转脚注", {
+      duration: 2000,
+    });
+  };
+
+  const toggleTableWrap = () => {
+    const next = !tableWrap;
+    setTableWrap(next);
+    setTableWrapEnabled(next);
+    toast.success(next ? "已开启：表格自动换行" : "已关闭：表格自动换行", {
       duration: 2000,
     });
   };
@@ -368,9 +383,20 @@ export function Toolbar({ onInsert }: ToolbarProps) {
       <button
         className={`md-toolbar-btn md-toolbar-toggle ${linkToFootnote ? "active" : ""}`}
         onClick={toggleLinkToFootnote}
+        aria-label={linkToFootnote ? "外链转脚注：开启" : "外链转脚注：关闭"}
         data-tooltip={linkToFootnote ? "外链转脚注：开启" : "外链转脚注：关闭"}
       >
         <ListEnd size={16} />
+      </button>
+
+      {/* 表格自动换行开关 */}
+      <button
+        className={`md-toolbar-btn md-toolbar-toggle ${tableWrap ? "active" : ""}`}
+        onClick={toggleTableWrap}
+        aria-label={tableWrap ? "表格自动换行：开启" : "表格自动换行：关闭"}
+        data-tooltip={tableWrap ? "表格自动换行：开启" : "表格自动换行：关闭"}
+      >
+        <WrapText size={16} />
       </button>
 
       {/* 语法帮助 */}

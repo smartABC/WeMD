@@ -11,6 +11,10 @@ const mocked = vi.hoisted(() => ({
   resolveInlineStyleVariablesForCopy: vi.fn((html: string) => html),
   applyLightRootVars: vi.fn(),
   renderMermaidBlocks: vi.fn(async (_container?: Element) => undefined),
+  renderTableBlocks: vi.fn(
+    async (_container?: Element, _wrap?: boolean) => undefined,
+  ),
+  tableWrapEnabled: false,
   materializeCounterPseudoContent: vi.fn((html: string) => html),
   stripCounterPseudoRules: vi.fn((css: string) => css),
 }));
@@ -52,6 +56,7 @@ vi.mock("../../utils/linkFootnote", () => ({
 
 vi.mock("../../components/Editor/ToolbarState", () => ({
   getLinkToFootnoteEnabled: () => false,
+  getTableWrapEnabled: () => mocked.tableWrapEnabled,
 }));
 
 vi.mock("../../services/inlineStyleVarResolver", () => ({
@@ -71,6 +76,10 @@ vi.mock("../../utils/mermaidConfig", () => ({
 
 vi.mock("../../services/wechatMermaidRenderer", () => ({
   renderMermaidBlocks: mocked.renderMermaidBlocks,
+}));
+
+vi.mock("../../services/wechatTableRenderer", () => ({
+  renderTableBlocks: mocked.renderTableBlocks,
 }));
 
 vi.mock("../../store/themeStore", () => ({
@@ -119,6 +128,7 @@ class MockClipboardItem {
 describe("wechatCopyService clipboard strategy", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocked.tableWrapEnabled = false;
     mocked.createMarkdownParserMock.mockImplementation(() => ({
       render: mocked.parserRender,
     }));
@@ -194,6 +204,17 @@ describe("wechatCopyService clipboard strategy", () => {
     expect(mocked.clipboardWrite).not.toHaveBeenCalled();
     expect(mocked.toastSuccess).toHaveBeenCalled();
     expect(mocked.toastError).not.toHaveBeenCalled();
+  });
+
+  it("复制到公众号时使用当前表格自动换行偏好", async () => {
+    mocked.tableWrapEnabled = true;
+
+    await copyToWechat("test", "#wemd table { width: 100%; }");
+
+    expect(mocked.renderTableBlocks).toHaveBeenCalledWith(
+      expect.any(HTMLElement),
+      true,
+    );
   });
 
   it("prefers electron clipboard bridge in electron runtime", async () => {

@@ -5,7 +5,7 @@
  * 设计原则：
  * - 字号跟随主题 CSS（已通过 juice 内联到元素 style 上），不再硬编码覆盖
  * - 色彩（边框、背景、斑马纹）跟主题走，保持视觉统一
- * - 宽表格保持 nowrap + 外层 overflow-x:auto，微信手机端可左右滑动
+ * - 默认保持 nowrap + 外层横向滚动；用户可切换为内容区内自动换行
  */
 
 /** 表格专用布局参数（针对手机可读性优化） */
@@ -14,62 +14,73 @@ const TABLE_LAYOUT_STYLES = {
   cellPadding: "6px 8px",
 } as const;
 
+const originalCellMinWidths = new WeakMap<HTMLElement, string>();
+
 /**
- * 覆盖表格布局参数，保留主题色彩与主题字号
- * 只改 line-height / padding，不碰 font-size / color / background / border-color
+ * 覆盖表格布局参数，保留主题色彩与主题字号。
+ * 自动换行时暂时解除主题列宽约束，关闭后恢复原始内联值。
  */
-const applyTableLayoutStyles = (table: HTMLTableElement): void => {
+const applyTableLayoutStyles = (
+  table: HTMLTableElement,
+  wrapEnabled: boolean,
+): void => {
   table.style.borderCollapse = "collapse";
   table.style.tableLayout = "auto";
-  table.style.width = "auto";
-  table.style.minWidth = "100%";
-  table.style.whiteSpace = "nowrap";
+  table.style.width = wrapEnabled ? "100%" : "auto";
+  table.style.minWidth = wrapEnabled ? "0" : "100%";
+  table.style.whiteSpace = wrapEnabled ? "normal" : "nowrap";
 
   const cells = table.querySelectorAll("th, td");
   for (const cell of cells) {
     const el = cell as HTMLElement;
     el.style.lineHeight = TABLE_LAYOUT_STYLES.lineHeight;
     el.style.padding = TABLE_LAYOUT_STYLES.cellPadding;
-    el.style.whiteSpace = "nowrap";
+    el.style.whiteSpace = wrapEnabled ? "normal" : "nowrap";
+    el.style.overflowWrap = wrapEnabled ? "anywhere" : "";
+    el.style.wordBreak = wrapEnabled ? "break-word" : "";
+    if (wrapEnabled) {
+      if (!originalCellMinWidths.has(el)) {
+        originalCellMinWidths.set(el, el.style.minWidth);
+      }
+      el.style.minWidth = "0";
+    } else if (originalCellMinWidths.has(el)) {
+      el.style.minWidth = originalCellMinWidths.get(el) ?? "";
+      originalCellMinWidths.delete(el);
+    }
     el.style.textAlign = "center";
   }
 };
 
-/**
- * 确保 .table-container 有 overflow-x:auto（自定义主题可能缺失此规则）
- * 直接写 inline style，不依赖主题 CSS 被 juice 内联
- */
-const ensureContainerScroll = (tableContainer: HTMLElement): void => {
-  tableContainer.style.overflowX = "auto";
-  tableContainer.style.setProperty("-webkit-overflow-scrolling", "touch");
+const applyContainerLayout = (
+  tableContainer: HTMLElement,
+  wrapEnabled: boolean,
+): void => {
+  tableContainer.style.overflowX = wrapEnabled ? "visible" : "auto";
+  if (wrapEnabled) {
+    tableContainer.style.removeProperty("-webkit-overflow-scrolling");
+  } else {
+    tableContainer.style.setProperty("-webkit-overflow-scrolling", "touch");
+  }
 };
 
 /**
  * 复制流程入口：强制覆盖所有表格的布局参数
  * 在 wechatCopyService 中于 renderMermaidBlocks 之后、normalizeCopyContainer 之前调用
  */
-export const renderTableBlocks = async (
+const renderTableLayout = async (
   container: HTMLElement,
+  wrapEnabled: boolean = false,
 ): Promise<void> => {
   const tableContainers =
     container.querySelectorAll<HTMLElement>(".table-container");
   for (const tc of tableContainers) {
-    ensureContainerScroll(tc);
+    applyContainerLayout(tc, wrapEnabled);
     const table = tc.querySelector("table");
-    if (table) applyTableLayoutStyles(table);
+    if (table) applyTableLayoutStyles(table, wrapEnabled);
   }
 };
 
-/**
- * 预览面板入口：强制覆盖表格布局参数，让用户看到与手机一致的效果
- */
-export const renderTableBlocksForPreview = async (
-  container: HTMLElement,
-): Promise<void> => {
-  const tables = container.querySelectorAll<HTMLTableElement>(
-    ".table-container table",
-  );
-  for (const table of tables) {
-    applyTableLayoutStyles(table);
-  }
-};
+export const renderTableBlocks = renderTableLayout;
+
+/** 预览与复制共用同一套表格布局，避免两条链路表现漂移。 */
+export const renderTableBlocksForPreview = renderTableLayout;

@@ -7,7 +7,10 @@ import toast from "react-hot-toast";
 import { processHtml, createMarkdownParser } from "@wemd/core";
 import katexCss from "katex/dist/katex.min.css?raw";
 import { convertLinksToFootnotes } from "../utils/linkFootnote";
-import { getLinkToFootnoteEnabled } from "../components/Editor/ToolbarState";
+import {
+  getLinkToFootnoteEnabled,
+  getTableWrapEnabled,
+} from "../components/Editor/ToolbarState";
 import {
   applyLightRootVars,
   resolveInlineStyleVariablesForCopy,
@@ -216,7 +219,7 @@ export async function copyToWechat(
     const mathFallback = await renderHighRiskMathAsImages(container);
     stripHiddenMathMarkupForWechat(container);
     await renderMermaidBlocks(container);
-    await renderTableBlocks(container);
+    await renderTableBlocks(container, getTableWrapEnabled());
     await renderMacSignSvgsToImages(container);
     normalizeCopyContainer(container);
 

@@ -42,6 +42,7 @@ vi.mock("../../utils/linkFootnote", () => ({
 
 vi.mock("../../components/Editor/ToolbarState", () => ({
   getLinkToFootnoteEnabled: () => false,
+  getTableWrapEnabled: () => false,
 }));
 
 vi.mock("../../services/inlineStyleVarResolver", () => ({
