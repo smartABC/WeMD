@@ -3,8 +3,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { Header } from "./components/Header/Header";
 import { FileSidebar } from "./components/Sidebar/FileSidebar";
-import { MarkdownEditor } from "./components/Editor/MarkdownEditor";
-import { MarkdownPreview } from "./components/Preview/MarkdownPreview";
+import { EditorPreviewWorkspace } from "./components/Workspace/EditorPreviewWorkspace";
 import { useFileSystem } from "./hooks/useFileSystem";
 import { useMobileView } from "./hooks/useMobileView";
 import { MobileToolbar } from "./components/common/MobileToolbar";
@@ -293,36 +292,14 @@ function App() {
                 ))}
             </div>
           </div>
-          <div
-            className="workspace"
-            data-mobile-view={isMobile ? activeView : undefined}
-          >
-            <div className="editor-pane">
-              {/* 存储未就绪或文件/历史加载中显示 loading */}
-              {!ready ||
+          <EditorPreviewWorkspace
+            loading={
+              !ready ||
               fileLoading ||
-              (historyLoading && !isElectron && storageType === "indexeddb") ? (
-                <div className="workspace-loading">
-                  <Loader2 className="animate-spin" size={24} />
-                  <p>正在加载文章</p>
-                </div>
-              ) : (
-                <MarkdownEditor />
-              )}
-            </div>
-            <div className="preview-pane">
-              {!ready ||
-              fileLoading ||
-              (historyLoading && !isElectron && storageType === "indexeddb") ? (
-                <div className="workspace-loading">
-                  <Loader2 className="animate-spin" size={24} />
-                  <p>正在加载文章</p>
-                </div>
-              ) : (
-                <MarkdownPreview />
-              )}
-            </div>
-          </div>
+              (historyLoading && !isElectron && storageType === "indexeddb")
+            }
+            mobileView={isMobile ? activeView : undefined}
+          />
 
           {/* 移动端底部工具栏 */}
           {isMobile && (

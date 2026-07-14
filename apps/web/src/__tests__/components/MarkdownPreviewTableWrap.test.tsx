@@ -69,6 +69,7 @@ describe("MarkdownPreview 表格自动换行", () => {
       expect.any(HTMLElement),
       false,
     );
+    expect(document.querySelector("[data-wemd-source-start]")).not.toBeNull();
 
     await act(async () => {
       setTableWrapEnabled(true);

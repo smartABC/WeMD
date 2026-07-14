@@ -54,3 +54,45 @@ describe("MarkdownParser code block", () => {
     expect(html).not.toContain("mathjax");
   });
 });
+
+describe("MarkdownParser 预览源位置", () => {
+  const markdown = [
+    "# 标题",
+    "",
+    "正文段落",
+    "",
+    "```ts",
+    "const answer = 42;",
+    "```",
+    "",
+    "$$",
+    "x^2",
+    "$$",
+  ].join("\n");
+
+  it("默认渲染不输出预览内部源位置属性", () => {
+    const html = createMarkdownParser().render(markdown);
+
+    expect(html).not.toContain("data-wemd-source-start");
+    expect(html).not.toContain("data-wemd-source-end");
+  });
+
+  it("显式开启后为可见块输出零基、结束行独占的源位置", () => {
+    const html = createMarkdownParser({ includeSourcePosition: true }).render(
+      markdown,
+    );
+
+    expect(html).toContain(
+      '<h1 data-wemd-source-start="0" data-wemd-source-end="1">',
+    );
+    expect(html).toContain(
+      '<p data-wemd-source-start="2" data-wemd-source-end="3">',
+    );
+    expect(html).toMatch(
+      /<pre[^>]*data-wemd-source-start="4"[^>]*data-wemd-source-end="7"/,
+    );
+    expect(html).toMatch(
+      /class="block-equation"[^>]*data-wemd-source-start="8"[^>]*data-wemd-source-end="11"/,
+    );
+  });
+});

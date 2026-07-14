@@ -32,12 +32,14 @@ import markdownItGitHubAlert from "./plugins/markdown-it-github-alert";
 import markdownItTaskLists from "markdown-it-task-lists";
 import markdownItCheckboxEmoji from "./plugins/markdown-it-checkbox-emoji";
 import markdownItAttributePolicy from "./plugins/markdown-it-attribute-policy";
+import markdownItSourcePosition from "./plugins/markdown-it-source-position";
 
 import highlightjs from "./utils/langHighlight";
 
 export interface MarkdownParserOptions {
   showMacBar?: boolean;
   mathRenderer?: "auto" | "katex";
+  includeSourcePosition?: boolean;
 }
 
 const MAC_CODE_DOTS = ["rgb(237,108,96)", "rgb(247,193,81)", "rgb(100,200,86)"]
@@ -125,6 +127,10 @@ export const createMarkdownParser = (options: MarkdownParserOptions = {}) => {
       labelAfter: true,
     })
     .use(markdownItCheckboxEmoji);
+
+  if (options.includeSourcePosition) {
+    markdownParser.use(markdownItSourcePosition);
+  }
 
   return markdownParser;
 };

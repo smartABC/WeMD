@@ -23,20 +23,20 @@ import {
   formatImageSize,
 } from "../../services/image/autoCompressImage";
 import { uploadEditorImage } from "../../services/image/imageUploadFlow";
+import type { ScrollSyncAdapter } from "../Workspace/editorPreviewScrollSync";
 
-const SYNC_SCROLL_EVENT = "wemd-sync-scroll";
-
-interface SyncScrollDetail {
-  source: "editor" | "preview";
-  ratio: number;
+interface MarkdownEditorProps {
+  onScrollSyncReady?: (adapter: ScrollSyncAdapter | null) => void;
 }
 
-export function MarkdownEditor() {
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(Math.max(value, min), max);
+
+export function MarkdownEditor({ onScrollSyncReady }: MarkdownEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const { markdown: content, setMarkdown } = useEditorStore();
   const uiTheme = useUITheme((state) => state.theme);
-  const isSyncingRef = useRef(false);
   const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
@@ -182,47 +182,63 @@ export function MarkdownEditor() {
     });
 
     const scrollDOM = view.scrollDOM;
-    const handleEditorScroll = () => {
-      if (isSyncingRef.current) {
-        isSyncingRef.current = false;
+    let scrollSubscriber: () => void = () => undefined;
+    const getPosition = () => {
+      const max = scrollDOM.scrollHeight - scrollDOM.clientHeight;
+      const ratio = max > 0 ? scrollDOM.scrollTop / max : 0;
+      const block = view.lineBlockAtHeight(scrollDOM.scrollTop);
+      const line = view.state.doc.lineAt(block.from).number - 1;
+      const progress =
+        block.height > 0
+          ? clamp((scrollDOM.scrollTop - block.top) / block.height, 0, 1)
+          : 0;
+      return { sourceLine: line + progress, ratio };
+    };
+
+    const scrollToPosition: ScrollSyncAdapter["scrollToPosition"] = (
+      position,
+    ) => {
+      const max = scrollDOM.scrollHeight - scrollDOM.clientHeight;
+      if (max <= 0) return;
+      if (position.ratio >= 0.999 || position.sourceLine === null) {
+        scrollDOM.scrollTo({ top: clamp(position.ratio, 0, 1) * max });
         return;
       }
-      const max = scrollDOM.scrollHeight - scrollDOM.clientHeight;
-      if (max <= 0) return;
-      const ratio = scrollDOM.scrollTop / max;
-      window.dispatchEvent(
-        new CustomEvent<SyncScrollDetail>(SYNC_SCROLL_EVENT, {
-          detail: { source: "editor", ratio },
-        }),
+
+      const sourceLine = clamp(
+        position.sourceLine,
+        0,
+        Math.max(0, view.state.doc.lines - 1),
       );
+      const lineNumber = Math.floor(sourceLine) + 1;
+      const block = view.lineBlockAt(view.state.doc.line(lineNumber).from);
+      const target = block.top + (sourceLine % 1) * block.height;
+      scrollDOM.scrollTo({ top: clamp(target, 0, max) });
     };
 
-    const handleSync = (event: Event) => {
-      const customEvent = event as CustomEvent<SyncScrollDetail>;
-      const detail = customEvent.detail;
-      if (!detail || detail.source === "editor") return;
-      const max = scrollDOM.scrollHeight - scrollDOM.clientHeight;
-      if (max <= 0) return;
-      isSyncingRef.current = true;
-      scrollDOM.scrollTo({ top: detail.ratio * max });
-    };
-
-    scrollDOM.addEventListener("scroll", handleEditorScroll);
-    window.addEventListener(SYNC_SCROLL_EVENT, handleSync as EventListener);
+    const handleEditorScroll = () => scrollSubscriber();
+    scrollDOM.addEventListener("scroll", handleEditorScroll, { passive: true });
+    onScrollSyncReady?.({
+      getPosition,
+      scrollToPosition,
+      subscribeScroll: (listener) => {
+        scrollSubscriber = listener;
+        return () => {
+          if (scrollSubscriber === listener) scrollSubscriber = () => undefined;
+        };
+      },
+    });
 
     viewRef.current = view;
 
     return () => {
       scrollDOM.removeEventListener("scroll", handleEditorScroll);
-      window.removeEventListener(
-        SYNC_SCROLL_EVENT,
-        handleSync as EventListener,
-      );
+      onScrollSyncReady?.(null);
       view.destroy();
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setMarkdown, uiTheme]);
+  }, [setMarkdown, uiTheme, onScrollSyncReady]);
 
   useEffect(() => {
     const view = viewRef.current;

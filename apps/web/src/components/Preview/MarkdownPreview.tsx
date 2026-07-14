@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import mermaid from "mermaid";
 import { createMarkdownParser, processHtml } from "@wemd/core";
 import { useEditorStore } from "../../store/editorStore";
@@ -17,16 +17,43 @@ import {
   getThemedMermaidDiagram,
 } from "../../utils/mermaidConfig";
 import { renderTableBlocksForPreview } from "../../services/wechatTableRenderer";
+import type { ScrollSyncAdapter } from "../Workspace/editorPreviewScrollSync";
+import {
+  mapScrollTopToSourceLine,
+  mapSourceLineToScrollTop,
+  type ScrollAnchor,
+} from "../Workspace/scrollAnchorMapping";
 import "./MarkdownPreview.css";
 
-const SYNC_SCROLL_EVENT = "wemd-sync-scroll";
-
-interface SyncScrollDetail {
-  source: "editor" | "preview";
-  ratio: number;
+interface MarkdownPreviewProps {
+  onScrollSyncReady?: (adapter: ScrollSyncAdapter | null) => void;
 }
 
-export function MarkdownPreview() {
+const collectAnchors = (
+  root: HTMLElement,
+  container: HTMLElement,
+): ScrollAnchor[] => {
+  const containerRect = container.getBoundingClientRect();
+  return Array.from(
+    root.querySelectorAll<HTMLElement>("[data-wemd-source-start]"),
+  ).flatMap((element) => {
+    const startLine = Number(element.dataset.wemdSourceStart);
+    const endLine = Number(element.dataset.wemdSourceEnd);
+    if (!Number.isFinite(startLine) || !Number.isFinite(endLine)) return [];
+    const rect = element.getBoundingClientRect();
+    const top = container.scrollTop + rect.top - containerRect.top;
+    return [
+      {
+        startLine,
+        endLine,
+        top,
+        bottom: top + rect.height,
+      },
+    ];
+  });
+};
+
+export function MarkdownPreview({ onScrollSyncReady }: MarkdownPreviewProps) {
   const { markdown } = useEditorStore();
   const { themeId: theme, customCSS, getThemeCSS } = useThemeStore();
   const uiTheme = useUITheme((state) => state.theme);
@@ -39,7 +66,6 @@ export function MarkdownPreview() {
   );
   const previewRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isSyncingRef = useRef(false);
   const mermaidRenderIdRef = useRef(0);
 
   // 获取当前主题对象（注意与 line 25 的 themeId 区分）
@@ -53,7 +79,12 @@ export function MarkdownPreview() {
 
   // 缓存 parser 实例，避免每次渲染都创建新实例
   const parser = useMemo(
-    () => createMarkdownParser({ showMacBar, mathRenderer: "katex" }),
+    () =>
+      createMarkdownParser({
+        showMacBar,
+        mathRenderer: "katex",
+        includeSourcePosition: true,
+      }),
     [showMacBar],
   );
 
@@ -160,64 +191,70 @@ export function MarkdownPreview() {
     renderTableBlocksForPreview(previewRef.current, tableWrapEnabled);
   }, [html, tableWrapEnabled]);
 
-  // 处理预览栏滚动事件
-  const handlePreviewScroll = useCallback(() => {
-    if (isSyncingRef.current || !scrollContainerRef.current) return;
-
-    const container = scrollContainerRef.current;
-    const scrollTop = container.scrollTop;
-    const scrollHeight = container.scrollHeight - container.clientHeight;
-
-    if (scrollHeight <= 0) return;
-
-    const ratio = scrollTop / scrollHeight;
-
-    // 发送同步事件给编辑器
-    const event = new CustomEvent<SyncScrollDetail>(SYNC_SCROLL_EVENT, {
-      detail: { source: "preview", ratio },
-    });
-    window.dispatchEvent(event);
-  }, []);
-
-  // 接收编辑器的同步事件
-  const handleSync = useCallback((event: Event) => {
-    const customEvent = event as CustomEvent<SyncScrollDetail>;
-    const { source, ratio } = customEvent.detail;
-
-    if (source === "preview" || !scrollContainerRef.current) return;
-
-    const container = scrollContainerRef.current;
-    const scrollHeight = container.scrollHeight - container.clientHeight;
-
-    if (scrollHeight <= 0) return;
-
-    isSyncingRef.current = true;
-    container.scrollTop = scrollHeight * ratio;
-
-    setTimeout(() => {
-      isSyncingRef.current = false;
-    }, 100);
-  }, []);
-
-  // 添加滚动事件监听
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
-
-    // 监听预览栏滚动
-    container.addEventListener("scroll", handlePreviewScroll);
-
-    // 监听编辑器的同步事件
-    window.addEventListener(SYNC_SCROLL_EVENT, handleSync as EventListener);
-
-    return () => {
-      container.removeEventListener("scroll", handlePreviewScroll);
-      window.removeEventListener(
-        SYNC_SCROLL_EVENT,
-        handleSync as EventListener,
+    const root = previewRef.current;
+    if (!container || !root) return;
+    let scrollSubscriber: () => void = () => undefined;
+    let anchorCache: ScrollAnchor[] | null = null;
+    const getAnchors = () => {
+      anchorCache ??= collectAnchors(root, container);
+      return anchorCache;
+    };
+    const getPosition: ScrollSyncAdapter["getPosition"] = () => {
+      const max = Math.max(0, container.scrollHeight - container.clientHeight);
+      const ratio = max > 0 ? container.scrollTop / max : 0;
+      return {
+        sourceLine: mapScrollTopToSourceLine(
+          getAnchors(),
+          container.scrollTop,
+          max,
+          ratio,
+        ),
+        ratio,
+      };
+    };
+    const scrollToPosition: ScrollSyncAdapter["scrollToPosition"] = (
+      position,
+    ) => {
+      const max = Math.max(0, container.scrollHeight - container.clientHeight);
+      if (position.sourceLine === null || position.ratio >= 0.999) {
+        container.scrollTop = Math.min(Math.max(position.ratio, 0), 1) * max;
+        return;
+      }
+      container.scrollTop = mapSourceLineToScrollTop(
+        getAnchors(),
+        position.sourceLine,
+        max,
+        position.ratio,
       );
     };
-  }, [handlePreviewScroll, handleSync]);
+    const handleScroll = () => scrollSubscriber();
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    onScrollSyncReady?.({
+      getPosition,
+      scrollToPosition,
+      subscribeScroll: (listener) => {
+        scrollSubscriber = listener;
+        return () => {
+          if (scrollSubscriber === listener) scrollSubscriber = () => undefined;
+        };
+      },
+      subscribeLayoutChange: (listener) => {
+        if (typeof ResizeObserver === "undefined") return () => undefined;
+        const observer = new ResizeObserver(() => {
+          anchorCache = null;
+          listener();
+        });
+        observer.observe(root);
+        return () => observer.disconnect();
+      },
+    });
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      onScrollSyncReady?.(null);
+    };
+  }, [html, onScrollSyncReady]);
 
   useEffect(() => {
     const handleLinkToFootnoteChange = (event: Event) => {
