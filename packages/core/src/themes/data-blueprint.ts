@@ -19,6 +19,7 @@ export const dataBlueprintTheme = `/* 数据蓝图：商业分析与数据复盘
   font-size: 15px;
   line-height: 1.72;
   text-align: left;
+  text-wrap: pretty;
 }
 
 #wemd h1,
@@ -44,6 +45,7 @@ export const dataBlueprintTheme = `/* 数据蓝图：商业分析与数据复盘
   font-weight: 800;
   line-height: 1.38;
   letter-spacing: 0.015em;
+  text-wrap: balance;
 }
 
 #wemd h2 {
@@ -59,6 +61,7 @@ export const dataBlueprintTheme = `/* 数据蓝图：商业分析与数据复盘
   font-size: 18px;
   font-weight: 700;
   line-height: 1.45;
+  text-wrap: balance;
 }
 
 #wemd h3 {
@@ -76,6 +79,7 @@ export const dataBlueprintTheme = `/* 数据蓝图：商业分析与数据复盘
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 14px;
   font-weight: 700;
+  text-wrap: balance;
 }
 
 #wemd h4,
@@ -127,8 +131,17 @@ export const dataBlueprintTheme = `/* 数据蓝图：商业分析与数据复盘
   margin: 0;
   color: #314765;
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.7;
+}
+
+#wemd .multiquote-2,
+#wemd .multiquote-3,
+#wemd .multiquote-1 .multiquote-1 {
+  margin: 10px 0 0;
+  padding: 8px 0 0 12px;
+  border-top: 1px dotted #aebdce;
+  border-bottom: none;
 }
 
 #wemd ul,
@@ -188,6 +201,7 @@ export const dataBlueprintTheme = `/* 数据蓝图：商业分析与数据复盘
 
 #wemd figure {
   margin: 30px 0 36px;
+  break-inside: avoid;
 }
 
 #wemd figure a {
@@ -264,6 +278,7 @@ export const dataBlueprintTheme = `/* 数据蓝图：商业分析与数据复盘
   border: 2px solid #173f7a;
   color: #26354d;
   background: #ffffff;
+  font-variant-numeric: tabular-nums;
   text-align: left;
 }
 
@@ -290,8 +305,10 @@ export const dataBlueprintTheme = `/* 数据蓝图：商业分析与数据复盘
   margin: 30px 0;
   padding: 17px 19px;
   border: 1px dashed #7790ac;
+  border-radius: 0;
   color: #26354d;
   background: transparent;
+  break-inside: avoid;
 }
 
 #wemd .callout-warning,

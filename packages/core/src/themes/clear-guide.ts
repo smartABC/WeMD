@@ -18,6 +18,7 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
   font-size: 16px;
   line-height: 1.82;
   text-align: left;
+  text-wrap: pretty;
 }
 
 #wemd h1,
@@ -43,6 +44,7 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
   font-size: 30px;
   font-weight: 800;
   line-height: 1.4;
+  text-wrap: balance;
 }
 
 #wemd h2 {
@@ -58,6 +60,7 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 19px;
   font-weight: 750;
+  text-wrap: balance;
 }
 
 #wemd h3 {
@@ -74,6 +77,7 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 17px;
   font-weight: 700;
+  text-wrap: balance;
 }
 
 #wemd h4,
@@ -127,6 +131,16 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
   color: #31514f;
   font-size: 15px;
   line-height: 1.8;
+}
+
+#wemd .multiquote-2,
+#wemd .multiquote-3,
+#wemd .multiquote-1 .multiquote-1 {
+  margin: 12px 0 0;
+  padding: 10px 0 0;
+  border: none;
+  border-top: 1px dashed #8eb1ad;
+  background: transparent;
 }
 
 #wemd ul,
@@ -190,7 +204,9 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
   margin: 34px 0 39px;
   padding: 0;
   border: 2px solid #172b29;
+  border-radius: 0;
   background: transparent;
+  break-inside: avoid;
 }
 
 #wemd figure a {
@@ -289,8 +305,10 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
   margin: 29px 0;
   padding: 17px 18px;
   border: 2px solid #172b29;
+  border-radius: 0;
   color: #263b3a;
   background: #ffffff;
+  break-inside: avoid;
 }
 
 #wemd .callout-warning {

@@ -18,6 +18,7 @@ export const easternNotesTheme = `/* 东方笺谱：现代人文长文 */
   font-size: 17px;
   line-height: 2.06;
   text-align: justify;
+  text-wrap: pretty;
 }
 
 #wemd h1,
@@ -54,6 +55,7 @@ export const easternNotesTheme = `/* 东方笺谱：现代人文长文 */
   font-weight: 700;
   line-height: 1.5;
   letter-spacing: 0.18em;
+  text-wrap: balance;
 }
 
 #wemd h2 {
@@ -76,7 +78,8 @@ export const easternNotesTheme = `/* 东方笺谱：现代人文长文 */
   color: #a33a2b;
   font-size: 21px;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
+  text-wrap: balance;
 }
 
 #wemd h3 {
@@ -92,6 +95,7 @@ export const easternNotesTheme = `/* 东方笺谱：现代人文长文 */
   font-weight: 700;
   line-height: 1.6;
   letter-spacing: 0.1em;
+  text-wrap: balance;
 }
 
 #wemd h4,
@@ -138,9 +142,7 @@ export const easternNotesTheme = `/* 东方笺谱：现代人文长文 */
   background: transparent;
 }
 
-#wemd .multiquote-1::before,
-#wemd .multiquote-2::before,
-#wemd .multiquote-3::before {
+#wemd .multiquote-1::before {
   content: "“";
   display: block;
   color: #a33a2b;
@@ -157,6 +159,18 @@ export const easternNotesTheme = `/* 东方笺谱：现代人文长文 */
   font-size: 18px;
   line-height: 2;
   text-align: center;
+}
+
+#wemd .multiquote-2,
+#wemd .multiquote-3,
+#wemd .multiquote-1 .multiquote-1 {
+  margin: 12px 0 0;
+  padding: 8px 0 0;
+  border: none;
+}
+
+#wemd .multiquote-1 .multiquote-1::before {
+  display: none;
 }
 
 #wemd ul,
@@ -214,6 +228,7 @@ export const easternNotesTheme = `/* 东方笺谱：现代人文长文 */
   margin: 48px 0 54px;
   padding: 0;
   border: none;
+  break-inside: avoid;
 }
 
 #wemd figure a {
@@ -315,8 +330,10 @@ export const easternNotesTheme = `/* 东方笺谱：现代人文长文 */
   border: none;
   border-top: 1px dotted #8f8177;
   border-bottom: 1px dotted #8f8177;
+  border-radius: 0;
   color: #4a423c;
   background: transparent;
+  break-inside: avoid;
 }
 
 #wemd .callout-warning,

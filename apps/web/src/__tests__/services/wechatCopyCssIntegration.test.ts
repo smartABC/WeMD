@@ -51,6 +51,39 @@ describe("wechat copy css integration", () => {
     }
   });
 
+  it("场景化主题复制嵌套引用时不会逐级挤压行宽", () => {
+    const themes = [
+      [dataBlueprintTheme, "12px"],
+      [easternNotesTheme, "0px"],
+      [clearGuideTheme, "0px"],
+      [whitespaceGalleryTheme, "0px"],
+    ] as const;
+    const html = `
+      <blockquote class="multiquote-1">
+        <p>一级引用</p>
+        <blockquote class="multiquote-1">
+          <p>二级引用</p>
+          <blockquote class="multiquote-1"><p>三级引用</p></blockquote>
+        </blockquote>
+      </blockquote>
+    `;
+
+    for (const [theme, expectedPaddingLeft] of themes) {
+      const container = document.createElement("div");
+      container.innerHTML = processHtml(html, theme, true, true);
+      const nestedQuotes = container.querySelectorAll(
+        ".multiquote-1 .multiquote-1",
+      );
+
+      expect(nestedQuotes).toHaveLength(2);
+      for (const quote of nestedQuotes) {
+        const style = (quote as HTMLElement).style;
+        expect(style.marginLeft).toBe("0px");
+        expect(style.paddingLeft).toBe(expectedPaddingLeft);
+      }
+    }
+  });
+
   it("将编辑部手记章节编号转换为可复制的真实节点", () => {
     const originalGetComputedStyle = window.getComputedStyle.bind(window);
     const getComputedStyleSpy = vi

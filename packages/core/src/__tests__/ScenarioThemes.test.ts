@@ -89,4 +89,21 @@ describe("scenario themes", () => {
       /#wemd \.multiquote-1,[\s\S]*?background:\s*#2b2927;/,
     );
   });
+
+  it("精修后的长文组件保持清晰边界与稳定换行", () => {
+    for (const [name, css] of Object.entries(themes)) {
+      expect(css, `${name} 标题缺少平衡换行`).toMatch(
+        /#wemd h1 \.content\s*\{[\s\S]*?text-wrap:\s*balance;/,
+      );
+      expect(css, `${name} 提示块不应继承默认大圆角`).toMatch(
+        /#wemd \.callout\s*\{[\s\S]*?border-radius:\s*0;/,
+      );
+      expect(css, `${name} 图片不应在分页时被拆开`).toMatch(
+        /#wemd figure\s*\{[\s\S]*?break-inside:\s*avoid;/,
+      );
+      expect(css, `${name} 嵌套引用不应重复挤压横向空间`).toMatch(
+        /#wemd \.multiquote-1 \.multiquote-1\s*\{[\s\S]*?margin:\s*\d+px 0 0;/,
+      );
+    }
+  });
 });

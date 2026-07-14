@@ -19,6 +19,7 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
   font-size: 17px;
   line-height: 2;
   text-align: left;
+  text-wrap: pretty;
 }
 
 #wemd h1 {
@@ -36,6 +37,7 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
   font-weight: 700;
   line-height: 1.42;
   letter-spacing: 0.08em;
+  text-wrap: balance;
 }
 
 #wemd h2 {
@@ -53,6 +55,7 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
   font-size: 26px;
   font-weight: 700;
   letter-spacing: 0.06em;
+  text-wrap: balance;
 }
 
 #wemd h3 {
@@ -67,6 +70,7 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.12em;
+  text-wrap: balance;
 }
 
 #wemd h4,
@@ -110,6 +114,7 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
   padding: 38px 28px;
   border: none;
   background: #2b2927;
+  break-inside: avoid;
 }
 
 #wemd .multiquote-1 p,
@@ -122,6 +127,16 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
   line-height: 1.85;
   letter-spacing: 0.04em;
   text-align: center;
+}
+
+#wemd .multiquote-2,
+#wemd .multiquote-3,
+#wemd .multiquote-1 .multiquote-1 {
+  margin: 18px 0 0;
+  padding: 14px 0 0;
+  border: none;
+  border-top: 1px solid #77716c;
+  background: transparent;
 }
 
 #wemd ul,
@@ -171,6 +186,7 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
 
 #wemd figure {
   margin: 72px 0 80px;
+  break-inside: avoid;
 }
 
 #wemd figure a {
@@ -275,8 +291,10 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
   border: none;
   border-top: 1px solid #aaa49f;
   border-bottom: 1px solid #aaa49f;
+  border-radius: 0;
   color: #49433f;
   background: transparent;
+  break-inside: avoid;
 }
 
 #wemd .callout-warning,
