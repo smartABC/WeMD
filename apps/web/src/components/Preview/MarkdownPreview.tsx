@@ -7,11 +7,9 @@ import { useUITheme } from "../../hooks/useUITheme";
 import { hasMathFormula, renderMathInElement } from "../../utils/katexRenderer";
 import { convertLinksToFootnotes } from "../../utils/linkFootnote";
 import {
-  getLinkToFootnoteEnabled,
-  getTableWrapEnabled,
-  LINK_TO_FOOTNOTE_EVENT,
-  TABLE_WRAP_EVENT,
-} from "../Editor/ToolbarState";
+  getPublishingPreference,
+  subscribePublishingPreference,
+} from "../../store/publishingPreferences";
 import {
   getMermaidConfig,
   getThemedMermaidDiagram,
@@ -62,10 +60,10 @@ export function MarkdownPreview({ onScrollSyncReady }: MarkdownPreviewProps) {
   const uiTheme = useUITheme((state) => state.theme);
   const [html, setHtml] = useState("");
   const [linkToFootnoteEnabled, setLinkToFootnoteEnabledState] = useState(() =>
-    getLinkToFootnoteEnabled(),
+    getPublishingPreference("linkToFootnote"),
   );
   const [tableWrapEnabled, setTableWrapEnabledState] = useState(() =>
-    getTableWrapEnabled(),
+    getPublishingPreference("tableWrap"),
   );
   const previewRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -257,39 +255,14 @@ export function MarkdownPreview({ onScrollSyncReady }: MarkdownPreviewProps) {
   }, [html, onScrollSyncReady]);
 
   useEffect(() => {
-    const handleLinkToFootnoteChange = (event: Event) => {
-      const customEvent = event as CustomEvent<boolean>;
-      setLinkToFootnoteEnabledState(customEvent.detail);
-    };
-
-    window.addEventListener(
-      LINK_TO_FOOTNOTE_EVENT,
-      handleLinkToFootnoteChange as EventListener,
+    return subscribePublishingPreference(
+      "linkToFootnote",
+      setLinkToFootnoteEnabledState,
     );
-    return () => {
-      window.removeEventListener(
-        LINK_TO_FOOTNOTE_EVENT,
-        handleLinkToFootnoteChange as EventListener,
-      );
-    };
   }, []);
 
   useEffect(() => {
-    const handleTableWrapChange = (event: Event) => {
-      const customEvent = event as CustomEvent<boolean>;
-      setTableWrapEnabledState(customEvent.detail);
-    };
-
-    window.addEventListener(
-      TABLE_WRAP_EVENT,
-      handleTableWrapChange as EventListener,
-    );
-    return () => {
-      window.removeEventListener(
-        TABLE_WRAP_EVENT,
-        handleTableWrapChange as EventListener,
-      );
-    };
+    return subscribePublishingPreference("tableWrap", setTableWrapEnabledState);
   }, []);
 
   return (

@@ -26,10 +26,9 @@ import {
   textFormatTools,
 } from "./toolbarConfigs";
 import {
-  getTableWrapEnabled,
-  setLinkToFootnoteEnabled,
-  setTableWrapEnabled,
-} from "./ToolbarState";
+  getPublishingPreference,
+  setPublishingPreference,
+} from "../../store/publishingPreferences";
 import { SyntaxHelpPopover } from "./SyntaxHelpPopover";
 import "./Toolbar.css";
 
@@ -52,16 +51,15 @@ export function Toolbar({ onInsert }: ToolbarProps) {
   const [mermaidSubmenuSide, setMermaidSubmenuSide] = useState<
     "left" | "right"
   >("right");
-  const [linkToFootnote, setLinkToFootnote] = useState(() => {
-    const saved = localStorage.getItem("wemd-link-to-footnote");
-    return saved === "true";
-  });
-  const [tableWrap, setTableWrap] = useState(() => getTableWrapEnabled());
+  const [linkToFootnote, setLinkToFootnote] = useState(() =>
+    getPublishingPreference("linkToFootnote"),
+  );
+  const [tableWrap, setTableWrap] = useState(() =>
+    getPublishingPreference("tableWrap"),
+  );
 
-  // 同步状态到全局变量和 localStorage
   useEffect(() => {
-    setLinkToFootnoteEnabled(linkToFootnote);
-    localStorage.setItem("wemd-link-to-footnote", String(linkToFootnote));
+    setPublishingPreference("linkToFootnote", linkToFootnote);
   }, [linkToFootnote]);
 
   // 点击外部关闭所有菜单
@@ -198,7 +196,7 @@ export function Toolbar({ onInsert }: ToolbarProps) {
   const toggleTableWrap = () => {
     const next = !tableWrap;
     setTableWrap(next);
-    setTableWrapEnabled(next);
+    setPublishingPreference("tableWrap", next);
     toast.success(next ? "已开启：表格自动换行" : "已关闭：表格自动换行", {
       duration: 2000,
     });

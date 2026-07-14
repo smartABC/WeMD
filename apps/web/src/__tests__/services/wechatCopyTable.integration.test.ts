@@ -20,9 +20,9 @@ vi.mock("../../utils/linkFootnote", () => ({
   convertLinksToFootnotes: (html: string) => html,
 }));
 
-vi.mock("../../components/Editor/ToolbarState", () => ({
-  getLinkToFootnoteEnabled: () => false,
-  getTableWrapEnabled: () => mocked.tableWrapEnabled,
+vi.mock("../../store/publishingPreferences", () => ({
+  getPublishingPreference: (preference: string) =>
+    preference === "tableWrap" && mocked.tableWrapEnabled,
 }));
 
 vi.mock("../../services/inlineStyleVarResolver", () => ({

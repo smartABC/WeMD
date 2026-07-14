@@ -7,10 +7,7 @@ import toast from "react-hot-toast";
 import { processHtml, createMarkdownParser } from "@wemd/core";
 import katexCss from "katex/dist/katex.min.css?raw";
 import { convertLinksToFootnotes } from "../utils/linkFootnote";
-import {
-  getLinkToFootnoteEnabled,
-  getTableWrapEnabled,
-} from "../components/Editor/ToolbarState";
+import { getPublishingPreference } from "../store/publishingPreferences";
 import {
   applyLightRootVars,
   resolveInlineStyleVariablesForCopy,
@@ -199,7 +196,7 @@ export async function copyToWechat(
     const rawHtml = parser.render(markdown);
     const themedCss = buildCopyCss(css);
     const sanitizedCss = stripCounterPseudoRules(themedCss);
-    const sourceHtml = getLinkToFootnoteEnabled()
+    const sourceHtml = getPublishingPreference("linkToFootnote")
       ? convertLinksToFootnotes(rawHtml)
       : rawHtml;
     const materializedHtml = materializeCounterPseudoContent(
@@ -215,7 +212,7 @@ export async function copyToWechat(
     const mathFallback = await renderHighRiskMathAsImages(container);
     stripHiddenMathMarkupForWechat(container);
     await renderMermaidBlocks(container);
-    await renderTableBlocks(container, getTableWrapEnabled());
+    await renderTableBlocks(container, getPublishingPreference("tableWrap"));
     renderMacSignDotsToImages(container);
     normalizeCopyContainer(container);
 

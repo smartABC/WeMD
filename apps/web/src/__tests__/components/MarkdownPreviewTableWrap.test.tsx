@@ -1,7 +1,7 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MarkdownPreview } from "../../components/Preview/MarkdownPreview";
-import { setTableWrapEnabled } from "../../components/Editor/ToolbarState";
+import { setPublishingPreference } from "../../store/publishingPreferences";
 
 const { renderTableBlocksForPreviewMock } = vi.hoisted(() => ({
   renderTableBlocksForPreviewMock: vi.fn(async () => undefined),
@@ -72,7 +72,7 @@ describe("MarkdownPreview 表格自动换行", () => {
     expect(document.querySelector("[data-wemd-source-start]")).not.toBeNull();
 
     await act(async () => {
-      setTableWrapEnabled(true);
+      setPublishingPreference("tableWrap", true);
       vi.advanceTimersByTime(110);
     });
 
