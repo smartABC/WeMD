@@ -2,12 +2,38 @@ export type PublishingPreferenceKey = "linkToFootnote" | "tableWrap";
 
 type PreferenceListener = (enabled: boolean) => void;
 
-const STORAGE_KEYS: Record<PublishingPreferenceKey, string> = {
-  linkToFootnote: "wemd-link-to-footnote",
-  tableWrap: "wemd-table-wrap",
+export const LINK_TO_FOOTNOTE_EVENT = "wemd-link-to-footnote-change";
+export const TABLE_WRAP_EVENT = "wemd-table-wrap-change";
+
+const PREFERENCES = {
+  linkToFootnote: {
+    storageKey: "wemd-link-to-footnote",
+    eventName: LINK_TO_FOOTNOTE_EVENT,
+    persistBeforeNotify: false,
+  },
+  tableWrap: {
+    storageKey: "wemd-table-wrap",
+    eventName: TABLE_WRAP_EVENT,
+    persistBeforeNotify: true,
+  },
+} satisfies Record<
+  PublishingPreferenceKey,
+  {
+    storageKey: string;
+    eventName: string;
+    persistBeforeNotify: boolean;
+  }
+>;
+
+const currentValues: Record<PublishingPreferenceKey, boolean> = {
+  linkToFootnote: false,
+  tableWrap: false,
 };
 
-const listeners: Record<PublishingPreferenceKey, Set<PreferenceListener>> = {
+const serverListeners: Record<
+  PublishingPreferenceKey,
+  Set<PreferenceListener>
+> = {
   linkToFootnote: new Set(),
   tableWrap: new Set(),
 };
@@ -15,31 +41,58 @@ const listeners: Record<PublishingPreferenceKey, Set<PreferenceListener>> = {
 export function getPublishingPreference(
   preference: PublishingPreferenceKey,
 ): boolean {
-  try {
-    return (
-      globalThis.localStorage?.getItem(STORAGE_KEYS[preference]) === "true"
+  if (typeof window !== "undefined") {
+    const saved = window.localStorage.getItem(
+      PREFERENCES[preference].storageKey,
     );
-  } catch {
-    return false;
+    if (saved === "true" || saved === "false") {
+      currentValues[preference] = saved === "true";
+    }
   }
+  return currentValues[preference];
 }
 
 export function setPublishingPreference(
   preference: PublishingPreferenceKey,
   enabled: boolean,
 ): void {
-  try {
-    globalThis.localStorage?.setItem(STORAGE_KEYS[preference], String(enabled));
-  } catch {
-    // 持久化不可用时仍通知当前页面订阅者。
+  const config = PREFERENCES[preference];
+  currentValues[preference] = enabled;
+
+  if (typeof window === "undefined") {
+    serverListeners[preference].forEach((listener) => listener(enabled));
+    return;
   }
-  listeners[preference].forEach((listener) => listener(enabled));
+
+  const persist = () =>
+    window.localStorage.setItem(config.storageKey, String(enabled));
+  const notify = () =>
+    window.dispatchEvent(
+      new CustomEvent<boolean>(config.eventName, { detail: enabled }),
+    );
+
+  if (config.persistBeforeNotify) {
+    persist();
+    notify();
+  } else {
+    notify();
+    persist();
+  }
 }
 
 export function subscribePublishingPreference(
   preference: PublishingPreferenceKey,
   listener: PreferenceListener,
 ): () => void {
-  listeners[preference].add(listener);
-  return () => listeners[preference].delete(listener);
+  if (typeof window === "undefined") {
+    serverListeners[preference].add(listener);
+    return () => serverListeners[preference].delete(listener);
+  }
+
+  const handlePreferenceChange = (event: Event) => {
+    listener((event as CustomEvent<boolean>).detail);
+  };
+  const eventName = PREFERENCES[preference].eventName;
+  window.addEventListener(eventName, handlePreferenceChange);
+  return () => window.removeEventListener(eventName, handlePreferenceChange);
 }
