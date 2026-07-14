@@ -32,14 +32,14 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 
 #wemd h1 {
   margin: 24px 0 44px;
-  padding: 22px 20px;
-  border: 1px solid #075f58;
-  border-bottom: 7px solid #075f58;
-  background: #e8f4f2;
+  padding: 0 0 18px;
+  border: none;
+  border-bottom: 8px solid #f0c94d;
+  background: transparent;
 }
 
 #wemd h1 .content {
-  color: #064c47;
+  color: #172b29;
   font-size: 30px;
   font-weight: 800;
   line-height: 1.4;
@@ -47,27 +47,31 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 
 #wemd h2 {
   margin: 45px 0 23px;
-  padding: 12px 14px;
-  border-top: 5px solid #087f75;
-  border-bottom: 1px solid #9bbdb9;
-  background: #f3f8f7;
+  padding: 0 0 9px;
+  border: none;
+  border-bottom: 4px solid #172b29;
+  background: transparent;
 }
 
 #wemd h2 .content {
-  color: #075f58;
-  font-size: 21px;
+  color: #172b29;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 19px;
   font-weight: 750;
 }
 
 #wemd h3 {
   margin: 32px 0 16px;
+  padding: 0;
+  border-bottom: 1px dashed #8eb1ad;
 }
 
 #wemd h3 .content {
-  display: block;
-  padding: 8px 11px;
-  color: #254342;
-  background: #dfeeed;
+  display: inline-block;
+  padding: 0 0 6px;
+  color: #075f58;
+  background: transparent;
+  font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 17px;
   font-weight: 700;
 }
@@ -111,10 +115,9 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 #wemd .multiquote-2,
 #wemd .multiquote-3 {
   margin: 28px 0;
-  padding: 18px 19px;
-  border: 1px solid #9bbdb9;
-  border-top: 5px solid #087f75;
-  background: #edf6f5;
+  padding: 18px 20px;
+  border: 2px dashed #172b29;
+  background: #fff7cf;
 }
 
 #wemd .multiquote-1 p,
@@ -140,16 +143,21 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 }
 
 #wemd ol > li {
-  margin: 12px 0;
+  margin: 14px 0;
+  color: #087f75;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 20px;
   font-weight: 750;
 }
 
 #wemd ol > li > section {
-  padding: 11px 13px;
-  border: 1px solid #b9d0cd;
-  border-top: 4px solid #087f75;
+  padding: 2px 0 12px;
+  border: none;
+  border-bottom: 1px solid #b9d0cd;
   color: #263b3a;
-  background: #f7faf9;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
   font-weight: 400;
 }
 
@@ -180,9 +188,9 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 
 #wemd figure {
   margin: 34px 0 39px;
-  padding: 10px;
-  border: 1px solid #b9d0cd;
-  background: #f7faf9;
+  padding: 0;
+  border: 2px solid #172b29;
+  background: transparent;
 }
 
 #wemd figure a {
@@ -198,11 +206,13 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 }
 
 #wemd figcaption {
-  margin-top: 10px;
-  color: #58716f;
+  margin-top: 0;
+  padding: 9px 12px;
+  color: #ffffff;
+  background: #172b29;
   font-size: 12px;
   line-height: 1.65;
-  text-align: center;
+  text-align: left;
 }
 
 #wemd p code,
@@ -250,6 +260,7 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 #wemd table {
   width: 100%;
   border-collapse: collapse;
+  border: 2px solid #172b29;
   color: #263b3a;
   background: #ffffff;
   text-align: left;
@@ -265,8 +276,8 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 }
 
 #wemd table tr th {
-  color: #ffffff;
-  background: #087f75;
+  color: #172b29;
+  background: #f0c94d;
   font-weight: 700;
 }
 
@@ -277,27 +288,29 @@ export const clearGuideTheme = `/* 清晰指南：教程与操作手册 */
 #wemd .callout {
   margin: 29px 0;
   padding: 17px 18px;
-  border: 1px solid #93b8b4;
-  border-top: 5px solid #087f75;
+  border: 2px solid #172b29;
   color: #263b3a;
-  background: #edf6f5;
+  background: #ffffff;
 }
 
 #wemd .callout-warning {
-  border-color: #d79d36;
-  border-top-color: #b46e00;
+  border-color: #8c6500;
   background: #fff6df;
 }
 
 #wemd .callout-caution {
-  border-color: #d8958d;
-  border-top-color: #a43c31;
+  border-color: #a43c31;
   background: #fff0ed;
 }
 
 #wemd .callout-title {
-  margin-bottom: 7px;
-  color: #075f58;
+  display: inline-block;
+  margin-bottom: 9px;
+  padding: 2px 7px;
+  color: #ffffff;
+  background: #172b29;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
   font-weight: 750;
 }
 

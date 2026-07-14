@@ -58,4 +58,35 @@ describe("scenario themes", () => {
     expect(clearGuideTheme).toContain("#087f75");
     expect(whitespaceGalleryTheme).toContain("#2b2927");
   });
+
+  it("四款主题使用不同的版式语法而非同一骨架换色", () => {
+    expect(dataBlueprintTheme).toMatch(
+      /#wemd h1\s*\{[\s\S]*?background:\s*#102b4e;/,
+    );
+    expect(dataBlueprintTheme).toContain(
+      "list-style-type: decimal-leading-zero",
+    );
+
+    expect(easternNotesTheme).toMatch(
+      /#wemd h1\s*\{[\s\S]*?max-width:\s*7em;[\s\S]*?text-align:\s*right;/,
+    );
+    expect(easternNotesTheme).toMatch(
+      /#wemd h1 \.content\s*\{[\s\S]*?max-width:\s*100%;/,
+    );
+    expect(easternNotesTheme).toContain("#wemd .multiquote-1::before");
+
+    expect(clearGuideTheme).toMatch(
+      /#wemd h1\s*\{[\s\S]*?border-bottom:\s*8px solid #f0c94d;/,
+    );
+    expect(clearGuideTheme).toMatch(
+      /#wemd figure\s*\{[\s\S]*?border:\s*2px solid #172b29;/,
+    );
+
+    expect(whitespaceGalleryTheme).toMatch(
+      /#wemd h1\s*\{[\s\S]*?max-width:\s*12em;/,
+    );
+    expect(whitespaceGalleryTheme).toMatch(
+      /#wemd \.multiquote-1,[\s\S]*?background:\s*#2b2927;/,
+    );
+  });
 });

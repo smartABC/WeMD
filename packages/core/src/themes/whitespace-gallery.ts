@@ -2,68 +2,71 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
 #wemd {
   max-width: 677px;
   margin: 0 auto;
-  padding: 22px 22px;
+  padding: 30px 24px;
   color: #3a3734;
   background-color: transparent;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: 16px;
-  line-height: 1.9;
-  letter-spacing: 0.02em;
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", SimSun, serif;
+  font-size: 17px;
+  line-height: 2;
+  letter-spacing: 0.035em;
   word-break: break-word;
 }
 
 #wemd p {
-  max-width: 40em;
-  margin: 0 auto 27px;
+  max-width: 34em;
+  margin: 0 auto 31px;
   color: #3a3734;
-  font-size: 16px;
-  line-height: 1.9;
-  text-align: justify;
+  font-size: 17px;
+  line-height: 2;
+  text-align: left;
 }
 
 #wemd h1 {
-  margin: 34px 0 62px;
-  padding: 0 0 23px;
-  border-bottom: 1px solid #a7a29d;
-  text-align: left;
+  max-width: 12em;
+  margin: 58px auto 96px;
+  padding: 0;
+  border: none;
+  text-align: center;
 }
 
 #wemd h1 .content {
   color: #2b2927;
   font-family: "Songti SC", "STSong", "Noto Serif CJK SC", SimSun, serif;
-  font-size: 35px;
+  font-size: 38px;
   font-weight: 700;
   line-height: 1.42;
-  letter-spacing: 0.045em;
-}
-
-#wemd h2 {
-  margin: 58px 0 29px;
-  text-align: center;
-}
-
-#wemd h2 .content {
-  display: inline-block;
-  padding: 0 18px 9px;
-  border-bottom: 3px solid #2b2927;
-  color: #2b2927;
-  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", SimSun, serif;
-  font-size: 22px;
-  font-weight: 700;
   letter-spacing: 0.08em;
 }
 
+#wemd h2 {
+  max-width: 22em;
+  margin: 78px auto 34px;
+  text-align: left;
+}
+
+#wemd h2 .content {
+  display: block;
+  padding: 0;
+  border: none;
+  color: #2b2927;
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", SimSun, serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
 #wemd h3 {
-  max-width: 40em;
-  margin: 39px auto 19px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #bbb6b1;
+  max-width: 34em;
+  margin: 44px auto 20px;
+  padding: 0;
+  border: none;
 }
 
 #wemd h3 .content {
-  color: #49433f;
-  font-size: 17px;
+  color: #80503f;
+  font-size: 15px;
   font-weight: 700;
+  letter-spacing: 0.12em;
 }
 
 #wemd h4,
@@ -103,20 +106,19 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
 #wemd .multiquote-1,
 #wemd .multiquote-2,
 #wemd .multiquote-3 {
-  margin: 48px 12px;
-  padding: 25px 16px;
-  border-top: 1px solid #2b2927;
-  border-bottom: 1px solid #2b2927;
-  background: transparent;
+  margin: 62px 0;
+  padding: 38px 28px;
+  border: none;
+  background: #2b2927;
 }
 
 #wemd .multiquote-1 p,
 #wemd .multiquote-2 p,
 #wemd .multiquote-3 p {
   margin: 0 auto;
-  color: #49433f;
+  color: #f7f6f4;
   font-family: "Songti SC", "STSong", "Noto Serif CJK SC", SimSun, serif;
-  font-size: 20px;
+  font-size: 21px;
   line-height: 1.85;
   letter-spacing: 0.04em;
   text-align: center;
@@ -137,8 +139,8 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
 }
 
 #wemd ol > li > section {
-  padding-bottom: 8px;
-  border-bottom: 1px dotted #bbb6b1;
+  padding-bottom: 4px;
+  border: none;
 }
 
 #wemd a {
@@ -160,15 +162,15 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
 }
 
 #wemd hr {
-  width: 36px;
-  height: 5px;
-  margin: 58px auto;
+  width: 1px;
+  height: 64px;
+  margin: 72px auto;
   border: none;
   background: #2b2927;
 }
 
 #wemd figure {
-  margin: 52px 0 58px;
+  margin: 72px 0 80px;
 }
 
 #wemd figure a {
@@ -184,12 +186,15 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
 }
 
 #wemd figcaption {
-  margin: 14px auto 0;
+  max-width: 34em;
+  margin: 16px auto 0;
+  padding-top: 9px;
+  border-top: 1px solid #bbb6b1;
   color: #77706a;
   font-size: 12px;
   line-height: 1.7;
   letter-spacing: 0.055em;
-  text-align: center;
+  text-align: left;
 }
 
 #wemd p code,
@@ -260,23 +265,24 @@ export const whitespaceGalleryTheme = `/* 留白画册：图片与人物故事 *
 }
 
 #wemd table tr:nth-child(2n) {
-  background: #f3f2f1;
+  background: transparent;
 }
 
 #wemd .callout {
-  max-width: 39em;
-  margin: 38px auto;
-  padding: 19px 20px;
-  border: 1px solid #aaa49f;
-  border-top: 4px solid #2b2927;
+  max-width: 34em;
+  margin: 52px auto;
+  padding: 24px 0;
+  border: none;
+  border-top: 1px solid #aaa49f;
+  border-bottom: 1px solid #aaa49f;
   color: #49433f;
-  background: #f4f3f2;
+  background: transparent;
 }
 
 #wemd .callout-warning,
 #wemd .callout-caution {
-  border-top-color: #8b4c3b;
-  background: #f6eeeb;
+  border-color: #8b4c3b;
+  background: transparent;
 }
 
 #wemd .callout-title {
