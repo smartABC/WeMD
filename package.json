@@ -10,6 +10,7 @@
     "dev:desktop": "node scripts/run-desktop-dev.mjs",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format:wechat": "node .cursor/skills/wemd-wechat-format/scripts/render-wechat.mjs",
     "prepare": "husky"
   },
   "devDependencies": {
